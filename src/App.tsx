@@ -1,19 +1,25 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
+import Login from './pages/Login'; // Thêm import cho trang login
 import Layout from './components/common/Layout';
+import { Outlet } from 'react-router-dom';
 
 function App() {
   return (
     <Router>
-      <Layout>
-        <Routes>
+      <Routes>
+        {/* Các route không có layout */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* Các route có layout */}
+        <Route element={<Layout><Outlet /></Layout>}>
           <Route path="/" element={<Home />} />
+        </Route>
 
-          {/* not found page */}
-          <Route path="*" element={<NotFound/>} />
-        </Routes>
-      </Layout>
+        {/* Route not found - không có layout */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </Router>
   );
 }
