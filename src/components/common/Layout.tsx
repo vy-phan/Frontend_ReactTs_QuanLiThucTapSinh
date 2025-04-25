@@ -13,7 +13,6 @@ import {
   SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { LayoutDashboard, CheckSquare, Plus, FileText, Image } from 'lucide-react';
-import avatarImage from '@/assets/avatar.svg';
 
 interface LayoutProps {
   children: React.ReactNode;
