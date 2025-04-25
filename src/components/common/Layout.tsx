@@ -26,11 +26,8 @@ const Layout = ({ children }: LayoutProps) => {
         <Sidebar className="shadow-md transition-all duration-300 ease-in-out flex flex-col bg-[#0f1729] border-r border-[#1d283a]">
           <SidebarHeader className="p-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-600">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-white">
-                  <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
-                  <path d="M3 9V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4" />
-                </svg>
+              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-black">
+                <img src='/src/assets/react.svg' />
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold">Acme Inc</span>
@@ -41,6 +38,7 @@ const Layout = ({ children }: LayoutProps) => {
           <SidebarSeparator className="mb-2" />
           <SidebarContent>
             <div className="px-2 py-2">
+              {/* tach 1  */}
               <h2 className="px-4 text-xs font-semibold tracking-tight">Platform</h2>
               <SidebarMenu className="mt-2">
                 <SidebarMenuItem>
@@ -77,7 +75,9 @@ const Layout = ({ children }: LayoutProps) => {
                 </SidebarMenuItem>
               </SidebarMenu>
             </div>
+            
             <div className="px-2 py-2">
+              {/* tach 2 */}
               <h2 className="px-4 text-xs font-semibold tracking-tight">Documentation</h2>
               <SidebarMenu className="mt-2">
                 <SidebarMenuItem>
@@ -93,16 +93,18 @@ const Layout = ({ children }: LayoutProps) => {
           </SidebarContent>
           <SidebarFooter className="mt-auto p-4">
             <Link to="/profile" className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-              <div className="w-8 h-8 rounded-full overflow-hidden">
-                <img src={avatarImage} alt="Avatar" className="w-full h-full object-cover" />
+              <div className="w-10 h-10 rounded-full overflow-hidden">
+                <img src='https://i.pinimg.com/236x/69/c4/2f/69c42f0fda1f02d565f835fe92ca6944.jpg' alt="Avatar" className="w-full h-full object-cover" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-medium">shadcn</span>
+                <span className="text-sm font-medium">Thai Leader</span>
                 <span className="text-xs text-sidebar-foreground/70">m@example.com</span>
               </div>
             </Link>
           </SidebarFooter>
         </Sidebar>
+
+
         <SidebarInset className="transition-all duration-300 ease-in-out">
           <div className="p-4 transition-all duration-300">
             <div className="flex items-center justify-between bg-card/50 p-2 rounded-lg shadow-sm transition-all duration-300">
@@ -116,6 +118,7 @@ const Layout = ({ children }: LayoutProps) => {
             </main>
           </div>
         </SidebarInset>
+
       </div>
     </SidebarProvider>
   );

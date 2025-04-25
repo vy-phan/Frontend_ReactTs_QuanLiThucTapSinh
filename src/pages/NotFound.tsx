@@ -8,7 +8,7 @@ const NotFound = () => {
       <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
         {/* Left Column - Content */}
         <div className="space-y-6 order-2 md:order-1 text-center">
-          <h1 className="text-7xl font-bold text-blue-800">404 <span className="text-5xl">LỖI</span></h1>
+          <h1 className="text-7xl font-bold text-blue-800">404 <span className="text-6xl">LỖI</span></h1>
           <h2 className="text-3xl font-semibold text-blue-700">Không tìm thấy trang</h2>
           <p className="text-lg text-blue-600">
             Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.
