@@ -12,7 +12,7 @@ import {
   SidebarTrigger,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, CheckSquare, Plus, FileText, Image } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Plus, Image } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -38,7 +38,7 @@ const Layout = ({ children }: LayoutProps) => {
           <SidebarContent>
             <div className="px-2 py-2">
               {/* tach 1  */}
-              <h2 className="px-4 text-xs font-semibold tracking-tight">Platform</h2>
+              <h2 className="px-4 text-xs font-semibold tracking-tight">Quản lí</h2>
               <SidebarMenu className="mt-2">
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Playground" isActive>
@@ -49,18 +49,10 @@ const Layout = ({ children }: LayoutProps) => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="History">
-                    <Link to="/history">
-                      <FileText className="mr-2 h-4 w-4" />
-                      <span>History</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Starred">
-                    <Link to="/starred">
+                    <Link to="/task">
                       <CheckSquare className="mr-2 h-4 w-4" />
-                      <span>Starred</span>
+                      <span>Công việc</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -68,7 +60,7 @@ const Layout = ({ children }: LayoutProps) => {
                   <SidebarMenuButton asChild tooltip="Settings">
                     <Link to="/settings">
                       <Image className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
+                      <span>Thực tập</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
