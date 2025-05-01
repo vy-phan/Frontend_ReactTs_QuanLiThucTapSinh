@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
+import TaskDetail from './pages/task-detail';
 import Login from './pages/Login'; // Thêm import cho trang login
 import Layout from './components/common/Layout';
 import { Outlet } from 'react-router-dom';
@@ -15,6 +16,10 @@ function App() {
         {/* Các route có layout */}
         <Route element={<Layout><Outlet /></Layout>}>
           <Route path="/" element={<Home />} />
+        </Route>
+
+        <Route element={<Layout><Outlet /></Layout>}>
+          <Route path="/task_detail/:taskId" element={<TaskDetail/>} /> 
         </Route>
 
         {/* Route not found - không có layout */}

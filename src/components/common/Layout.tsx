@@ -21,7 +21,7 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   return (
     <SidebarProvider>
-      <div className="flex h-screen bg-background transition-all duration-300 ease-in-out">
+      <div className="flex h-screen w-full bg-background transition-all duration-300 ease-in-out">
         <Sidebar className="shadow-md transition-all duration-300 ease-in-out flex flex-col bg-[#0f1729] border-r border-[#1d283a]">
           <SidebarHeader className="p-4">
             <div className="flex items-center gap-2">
@@ -72,6 +72,14 @@ const Layout = ({ children }: LayoutProps) => {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild tooltip="task detail">
+                    <Link to="/task-detail">
+                      <Image className="mr-2 h-4 w-4" />
+                      <span>Task detail</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </div>
             
@@ -98,6 +106,7 @@ const Layout = ({ children }: LayoutProps) => {
               <div className="flex flex-col">
                 <span className="text-sm font-medium">Thai Leader</span>
                 <span className="text-xs text-sidebar-foreground/70">m@example.com</span>
+                <span className='text-xs' >xin chào mọi người</span>
               </div>
             </Link>
           </SidebarFooter>
@@ -115,6 +124,7 @@ const Layout = ({ children }: LayoutProps) => {
             <main className="mt-6 transition-all duration-300">
               {children}
             </main>
+
           </div>
         </SidebarInset>
 
