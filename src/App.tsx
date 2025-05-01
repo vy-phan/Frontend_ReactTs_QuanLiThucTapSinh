@@ -5,6 +5,8 @@ import TaskDetail from './pages/task-detail';
 import Login from './pages/Login'; // Thêm import cho trang login
 import Layout from './components/common/Layout';
 import { Outlet } from 'react-router-dom';
+import Task from './pages/Task';
+import Intern from './pages/Intern';
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
         {/* Các route có layout */}
         <Route element={<Layout><Outlet /></Layout>}>
           <Route path="/" element={<Home />} />
+          <Route path="/task" element={<Task />} />
+          <Route path="/intern" element={<Intern />} />
         </Route>
 
         <Route element={<Layout><Outlet /></Layout>}>

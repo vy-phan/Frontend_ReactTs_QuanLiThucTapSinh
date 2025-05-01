@@ -17,7 +17,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Dialog } from "@headlessui/react";
 import { useParams } from "react-router-dom";
-import API_BASE_URL from "../constants/api";
+import {API_BASE_URL} from "../constants/api";
 
 // Droppable container
 const DroppableContainer = ({ id, children }: { id: string; children: React.ReactNode }) => {
