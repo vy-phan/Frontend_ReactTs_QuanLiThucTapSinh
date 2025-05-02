@@ -148,7 +148,7 @@ const Layout = ({ children }: LayoutProps) => {
                 <span className="text-sm font-medium">Thai Leader</span>
                 <span className="text-xs text-sidebar-foreground/70">m@example.com</span>
               </div>
-            </Link>
+            </div>
           </SidebarFooter>
         </Sidebar>
 
