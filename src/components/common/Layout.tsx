@@ -17,11 +17,14 @@ import { LayoutProps } from '@/@type/type';
 import { logoutUser } from '@/hooks/authApi';
 import { useAuth } from '@/context/authContext';
 import { getAvatarUrl } from '@/utils/displayAvatar';
+import { useState } from 'react';
+import { ProfileDialog } from './ProfileDialog';
 
 
 const Layout = ({ children }: LayoutProps) => {
   // Lấy thông tin user từ auth context
   const { user } = useAuth();
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
 
   return (
     <SidebarProvider>
@@ -45,7 +48,7 @@ const Layout = ({ children }: LayoutProps) => {
               <h2 className="px-4 text-xs font-semibold tracking-tight">Quản lí</h2>
               <SidebarMenu className="mt-2">
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="Playground" isActive>
+                  <SidebarMenuButton asChild tooltip="Playground">
                     <Link to="/">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       <span>Home</span>
@@ -115,12 +118,12 @@ const Layout = ({ children }: LayoutProps) => {
                 id="avatar-dropdown"
                 className="absolute bottom-full left-0 mb-2 w-full bg-sidebar-accent rounded-md shadow-lg py-1 hidden border border-[#2d3748]"
               >
-                <Link 
-                  to="/profile"
+                <button 
                   className="block px-4 py-2 text-sm hover:bg-[#1e40af] w-full text-left transition-colors duration-200"
+                  onClick={() => setIsProfileDialogOpen(true)}
                 >
                   Thông tin cá nhân
-                </Link>
+                </button>
                 <button 
                   className="block px-4 py-2 text-sm hover:bg-[#1e40af] w-full text-left transition-colors duration-200"
                   onClick={async () => {
@@ -135,6 +138,14 @@ const Layout = ({ children }: LayoutProps) => {
                 >
                   Đăng xuất
                 </button>
+
+                {/* Profile Dialog */}
+                <ProfileDialog
+                  open={isProfileDialogOpen}
+                  onOpenChange={() => setIsProfileDialogOpen(false)}
+                  user={user}
+                />
+
               </div>
             </div>
           </SidebarFooter>
