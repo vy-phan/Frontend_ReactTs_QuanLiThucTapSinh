@@ -37,34 +37,53 @@ export enum UserRole {
 }
 
 export interface User {
-id: number; 
-username: string;
-email: string;
-birth_year?: number;
-phone?: string;
-gender?: string;
-avatar?: string;
-start_date?: string; // ISO format string
-cv_link?: string;
-role: UserRole | null; // Sử dụng Enum Role
-is_verified?: boolean;
-created_at?: string; // ISO format string
+  id: number;
+  username: string;
+  email: string;
+  birth_year?: number;
+  phone?: string;
+  gender?: string;
+  avatar?: string;
+  start_date?: string; // ISO format string
+  cv_link?: string;
+  role: UserRole | null; // Sử dụng Enum Role
+  is_verified?: boolean;
+  created_at?: string; // ISO format string
 }
 
 
 export interface AuthContextType {
-isAuthenticated: boolean;
-user: User | null;
-role: UserRole | null; // Thêm role vào context để dễ dàng kiểm tra phân quyền
-isLoading: boolean; // Trạng thái check auth ban đầu
-login: (credentials: LoginCredentials) => Promise<User>; // Login trả về User
-logout: () => Promise<void>;
-checkAuthStatus: () => Promise<void>; // Hàm kiểm tra trạng thái login
+  isAuthenticated: boolean;
+  user: User | null;
+  role: UserRole | null; // Thêm role vào context để dễ dàng kiểm tra phân quyền
+  isLoading: boolean; // Trạng thái check auth ban đầu
+  login: (credentials: LoginCredentials) => Promise<User>; // Login trả về User
+  logout: () => Promise<void>;
+  checkAuthStatus: () => Promise<void>; // Hàm kiểm tra trạng thái login
 }
 
 export interface LayoutProps {
   children: React.ReactNode;
 }
+
+export interface ProfileDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  user: User | null;
+}
+
+export const roleConfig = {
+  [UserRole.MANAGER]: {
+    label: 'Quản lý',
+    variant: 'default' as const,
+    className: 'bg-blue-500 text-white'
+  },
+  [UserRole.INTERN]: {
+    label: 'Thực tập sinh',
+    variant: 'secondary' as const,
+    className: 'bg-green-500 text-white'
+  }
+};
 
 //=============================================================================
 //
@@ -82,10 +101,10 @@ export interface LoginApiResponse {
   success: boolean;
   message: string;
   data?: {
-      access_token: string; // Frontend không cần dùng trực tiếp
-      refresh_token: string; // Frontend không cần dùng trực tiếp
-      user: User;
-      role: UserRole | null; // Backend trả về role
+    access_token: string; // Frontend không cần dùng trực tiếp
+    refresh_token: string; // Frontend không cần dùng trực tiếp
+    user: User;
+    role: UserRole | null; // Backend trả về role
   }
 }
 
@@ -101,7 +120,7 @@ export interface RefreshApiResponse {
   success: boolean;
   message: string;
   data?: {
-      access_token: string; // Frontend không cần dùng trực tiếp
+    access_token: string; // Frontend không cần dùng trực tiếp
   }
 }
 
