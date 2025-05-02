@@ -16,7 +16,21 @@ export const loginSchema = z.object({
     .min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" })
 });
 
-export type FormData = z.infer<typeof loginSchema>;
+// Schema validation
+export const internSchema = z.object({
+  username: z.string().min(1, "Tên đăng nhập là bắt buộc"),
+  email: z.string().email("Email không hợp lệ").min(1, "Email là bắt buộc"),
+  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+  birth_year: z.number().optional(),
+  role: z.string().optional(),
+  phone: z.string().optional(),
+  gender: z.string().optional(),
+  avatar: z.instanceof(File).optional(),
+  start_date: z.string().optional(),
+  cv_link: z.instanceof(File).optional(),
+  is_verified: z.boolean().optional(),
+});
+
 
 export interface ErrorMessageProps {
   message: string;
@@ -42,6 +56,7 @@ export interface User {
   email: string;
   birth_year?: number;
   phone?: string;
+  password?: string;  
   gender?: string;
   avatar?: string;
   start_date?: string; // ISO format string
@@ -138,8 +153,6 @@ export interface LogoutApiResponse {
   success: boolean;
   message: string;
 }
-
-
 
 export interface TaskStatusUpdateResponse {
   success: boolean;  // Kết quả của thao tác cập nhật trạng thái
