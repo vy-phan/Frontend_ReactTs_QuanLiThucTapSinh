@@ -110,3 +110,20 @@ export interface LogoutApiResponse {
   success: boolean;
   message: string;
 }
+
+
+export interface TaskDetail {
+  id: string;  // ID của task
+  title: string;  // Tiêu đề của task
+  description: string;  // Mô tả của task
+  status: 'Đã giao' | 'Đang thực hiện' | 'Hoàn thành';  // Trạng thái của task
+  // Thêm bất kỳ thuộc tính nào bạn cần ở đây, ví dụ như thời gian tạo, cập nhật, v.v.
+  createdAt: string;
+  updatedAt: string;
+}
+
+
+export interface TaskStatusUpdateResponse {
+  success: boolean;  // Kết quả của thao tác cập nhật trạng thái
+  message: string;  // Thông báo hoặc lỗi
+}
