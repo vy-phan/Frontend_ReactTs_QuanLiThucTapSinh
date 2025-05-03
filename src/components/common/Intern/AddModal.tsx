@@ -11,64 +11,55 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { internSchema, User, UserRole } from "@/@type/type";
+import { UserRole, internSchema } from "@/@type/type";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Resolver, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ErrorMessage } from "../ErrorMessage";
 import { z } from "zod";
+import { createUser } from "@/hooks/userApi";
+import { toast } from "sonner";
 
+// Add this interface at the top of the file
+type FormValues = z.infer<typeof internSchema>;
 
-type InternFormData = z.infer<typeof internSchema>;
-
-interface InternModalProps {
-  onSave: (userData: Omit<User, 'id'>) => void;
-  isManager?: boolean; // Thêm prop để kiểm tra có phải manager không
-}
-
-export function InternModal({ onSave, isManager = false }: InternModalProps) {
+export function AddModal() {
   const [open, setOpen] = useState(false);
-  const {
-    register,
-    handleSubmit,
+  const { 
+    register, 
+    handleSubmit, 
     formState: { errors },
-    setValue,
-    watch,
-    reset,
-  } = useForm<InternFormData>({
-    resolver: zodResolver(internSchema),
+    setValue
+  } = useForm<FormValues>({
+    resolver: zodResolver(internSchema) as Resolver<FormValues>,
     defaultValues: {
       role: UserRole.INTERN,
       is_verified: false,
+      start_date: new Date().toISOString().split('T')[0]
     }
   });
 
-  const onSubmit = (data: InternFormData) => {
-    const formData = {
-      ...data,
-      role: UserRole.INTERN,
-      created_at: new Date().toISOString(),
-    };
-    // Convert File objects to strings before saving
-    const processedFormData = {
-      ...formData,
-      avatar: formData.avatar ? URL.createObjectURL(formData.avatar) : undefined,
-      cv_link: formData.cv_link ? URL.createObjectURL(formData.cv_link) : undefined
-    };
-    onSave(processedFormData);
-    setOpen(false);
-    reset();
+  // Handle date input properly
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue('start_date', e.target.value);
   };
 
-  const handleFileChange = (field: 'avatar' | 'cv_link', e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setValue(field, e.target.files[0]);
+  const onSubmit = async(data: any) => {
+    try {
+      const reponnse = await createUser(data);
+      if (reponnse) {
+        toast.success("Thêm người dùng thành công");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
     }
+    setOpen(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Thêm người dùng</Button>
+        <Button className="bg-black">Thêm người dùng</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
@@ -83,42 +74,52 @@ export function InternModal({ onSave, isManager = false }: InternModalProps) {
             <div className="space-y-4">
               <div className="grid gap-2">
                 <Label htmlFor="username">Tên đăng nhập</Label>
-                <Input
-                  id="username"
+                <Input 
+                  id="username" 
+                  placeholder="vd: nguyenvana" 
                   {...register("username")}
                 />
-                {errors.username && <span className="text-red-500 text-sm">{errors.username.message}</span>}
+                {errors.username && <ErrorMessage message={errors.username.message || ''} />}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="vd: nguyenvana@example.com" 
                   {...register("email")}
                 />
-                {errors.email && <span className="text-red-500 text-sm">{errors.email.message}</span>}
+                {errors.email && <ErrorMessage message={errors.email.message || ''} />}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Mật khẩu</Label>
-                <Input
-                  id="password"
-                  type="password"
+                <Input 
+                  id="password" 
+                  type="password" 
+                  placeholder="Ít nhất 6 ký tự" 
                   {...register("password")}
                 />
-                {errors.password && <span className="text-red-500 text-sm">{errors.password.message}</span>}
+                {errors.password && <ErrorMessage message={errors.password.message || ''} />}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="birth_year">Năm sinh</Label>
-                <Input
-                  id="birth_year"
-                  type="number"
-                  {...register("birth_year", { valueAsNumber: true })}
+                <Input 
+                  id="birth_year" 
+                  type="number" 
+                  min={1900}
+                  max={(new Date().getFullYear())-17}
+                  placeholder="vd: 2000" 
+                  {...register("birth_year", {
+                    valueAsNumber: true
+                  })}
                 />
+                {errors.birth_year && <ErrorMessage message={errors.birth_year.message || ''} />}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="phone">Số điện thoại</Label>
-                <Input
-                  id="phone"
+                <Input 
+                  id="phone" 
+                  placeholder="vd: 0987654321" 
                   {...register("phone")}
                 />
               </div>
@@ -129,7 +130,10 @@ export function InternModal({ onSave, isManager = false }: InternModalProps) {
               <div className="grid gap-2">
                 <Label htmlFor="gender">Giới tính</Label>
                 <Select
-                  onValueChange={(value) => setValue("gender", value)}
+                  onValueChange={(value) => {
+                    setValue('gender', value as "Nam" | "Nữ" | "Khác");
+                  }}
+                  defaultValue="Nam"
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Chọn giới tính" />
@@ -140,46 +144,28 @@ export function InternModal({ onSave, isManager = false }: InternModalProps) {
                     <SelectItem value="Khác">Khác</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.gender && <ErrorMessage message={errors.gender.message || ''} />}
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="avatar">Ảnh đại diện</Label>
-                <Input
-                  id="avatar"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileChange('avatar', e)}
-                />
-                {watch("avatar") && (
-                  <span className="text-sm text-gray-500">{watch("avatar")?.name}</span>
-                )}
-              </div>
+              
               <div className="grid gap-2">
                 <Label htmlFor="start_date">Ngày bắt đầu</Label>
-                <Input
-                  id="start_date"
-                  type="date"
+                <Input 
+                  id="start_date" 
+                  type="date" 
                   {...register("start_date")}
+                  onChange={handleDateChange}
                 />
+                {errors.start_date && <ErrorMessage message={errors.start_date.message || ''} />}
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="cv_link">File CV</Label>
-                <Input
-                  id="cv_link"
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={(e) => handleFileChange('cv_link', e)}
-                />
-                {watch("cv_link") && (
-                  <span className="text-sm text-gray-500">{watch("cv_link")?.name}</span>
-                )}
-              </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="is_verified">Xác thực</Label>
-                <Select
-                  onValueChange={(value) => setValue("is_verified", value === "true")}
+                <Select 
+                {...register("is_verified")}
+                onValueChange={(value) => setValue('is_verified', value === 'true')}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Trạng thái xác thực" />
+                    <SelectValue placeholder="Chọn trạng thái" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="true">Đã xác thực</SelectItem>
@@ -187,15 +173,10 @@ export function InternModal({ onSave, isManager = false }: InternModalProps) {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            {/* Thêm select cho vai trò nếu là manager */}
-            {isManager && (
+
               <div className="grid gap-2">
                 <Label htmlFor="role">Vai trò</Label>
-                <Select
-                  onValueChange={(value) => setValue("role", value as UserRole)}
-                  defaultValue={UserRole.INTERN}
-                >
+                <Select {...register("role")} defaultValue={UserRole.INTERN}>
                   <SelectTrigger>
                     <SelectValue placeholder="Chọn vai trò" />
                   </SelectTrigger>
@@ -205,7 +186,7 @@ export function InternModal({ onSave, isManager = false }: InternModalProps) {
                   </SelectContent>
                 </Select>
               </div>
-            )}
+            </div>
           </div>
           <DialogFooter>
             <Button type="submit">Lưu thông tin</Button>

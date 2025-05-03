@@ -14,7 +14,7 @@ import { User, UserRole } from '@/@type/type';
 import { toast } from 'sonner';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { InternModal } from '@/components/common/Intern/InternModal';
+import { AddModal } from '@/components/common/Intern/AddModal';
 
 const Intern = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -48,6 +48,15 @@ const Intern = () => {
     }
   };
 
+  // const handleAddUser = async (userData: Omit<User, 'id'>) => {
+  //   try {
+  //     await createUser(userData);
+  //     fetchUsers(); // Refresh the list
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // };
+
   const filteredUsers = users.filter(user =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -66,12 +75,7 @@ const Intern = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-64"
               />
-              <InternModal onSave={(userData) => {
-                // Handle saving the user data to your API
-                console.log('New user:', userData);
-              }} 
-               isManager={true}
-              />
+              <AddModal />
             </div>
           </div>
         </CardHeader>
@@ -123,8 +127,14 @@ const Intern = () => {
                       {user.start_date ? new Date(user.start_date).toLocaleDateString() : 'N/A'}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex gap-2 justify-end ">
-                        <Button className='bg-amber-400' size="sm">
+                      <div className="flex gap-2 justify-end">
+                        <Button 
+                          className="bg-blue-500 hover:bg-blue-600 text-white" 
+                          size="sm"
+                        >
+                          Xem
+                        </Button>
+                        <Button className='bg-amber-400 hover:bg-amber-500' size="sm">
                           Sửa
                         </Button>
                         <Button

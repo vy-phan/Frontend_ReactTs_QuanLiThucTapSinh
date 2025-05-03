@@ -1,43 +1,5 @@
 import { z } from 'zod';
 
-
-//=============================================================================
-//
-//                      định nghĩa kiểu dữ liệu khi nhập
-//
-//=============================================================================
-
-export const loginSchema = z.object({
-  email: z.string()
-    .min(1, { message: "Email là bắt buộc" })
-    .email({ message: "Email không hợp lệ" }),
-  password: z.string()
-    .min(1, { message: "Mật khẩu là bắt buộc" })
-    .min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" })
-});
-
-// Schema validation
-export const internSchema = z.object({
-  username: z.string().min(1, "Tên đăng nhập là bắt buộc"),
-  email: z.string().email("Email không hợp lệ").min(1, "Email là bắt buộc"),
-  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
-  birth_year: z.number().optional(),
-  role: z.string().optional(),
-  phone: z.string().optional(),
-  gender: z.string().optional(),
-  avatar: z.instanceof(File).optional(),
-  start_date: z.string().optional(),
-  cv_link: z.instanceof(File).optional(),
-  is_verified: z.boolean().optional(),
-});
-
-
-export interface ErrorMessageProps {
-  message: string;
-  className?: string;
-}
-
-
 //=============================================================================
 //
 //              định nghĩa kiểu dữ liệu đối tượng
@@ -108,6 +70,44 @@ export const roleConfig = {
     className: 'bg-green-500 text-white'
   }
 };
+
+//=============================================================================
+//
+//                      định nghĩa kiểu dữ liệu khi nhập
+//
+//=============================================================================
+
+export const loginSchema = z.object({
+  email: z.string()
+    .min(1, { message: "Email là bắt buộc" })
+    .email({ message: "Email không hợp lệ" }),
+  password: z.string()
+    .min(1, { message: "Mật khẩu là bắt buộc" })
+    .min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" })
+});
+
+// Schema validation
+export const internSchema = z.object({
+  username: z.string().min(1, "Tên đăng nhập là bắt buộc"),
+  email: z.string().email("Email không hợp lệ").min(1, "Email là bắt buộc"),
+  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự").optional(),
+  birth_year: z.number().int().optional(),
+  phone: z.string().optional(),
+  gender: z.enum(['Nam', 'Nữ', 'Khác']).default('Nam'),
+  avatar: z.instanceof(File).optional(),
+  start_date: z.string().refine(val => !isNaN(Date.parse(val)), {
+    message: "Ngày không hợp lệ"
+  }).optional(),
+  role: z.nativeEnum(UserRole).default(UserRole.INTERN),
+  is_verified: z.boolean().default(false),
+});
+
+
+export interface ErrorMessageProps {
+  message: string;
+  className?: string;
+}
+
 
 //=============================================================================
 //
