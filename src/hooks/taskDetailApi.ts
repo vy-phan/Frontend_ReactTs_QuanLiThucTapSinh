@@ -42,6 +42,9 @@ export const useTaskDetail = (taskId: string | undefined) => {
       );
       if (!response.data.success) {
         throw new Error(response.data.message || "Cập nhật trạng thái thất bại");
+      }else{
+        console.log("Cập nhật trạng thái thành công:", response.data.message);
+        alert(`Cập nhật trạng thái thành công! ${status}`);
       }
     } catch (err) {
       console.error("Lỗi cập nhật trạng thái:", err);
@@ -57,13 +60,38 @@ export const useTaskDetail = (taskId: string | undefined) => {
   return { tabs, setTabs, fetchTaskDetail, updateTaskStatus };
 };
 
- export const delete_taskDetail = async (taskId: string) => {
-    try {
-        const response = await apiClient.delete<{ success: boolean; message: string }>(TASK_DETAIL_ENDPOINTS.DELETE(taskId));
-        if (!response.data.success) {
-        throw new Error(response.data.message || "Xóa task detail thất bại");
-        }
-    } catch (err) {
-        console.error("Lỗi xóa task detail:", err);
+export const addTaskDetail = async (taskId: string, newTask: any) => {
+  const payload = {
+    ...newTask,
+    task_id: taskId,
+    assignees: newTask.assignees.split(",").map((a: string) => a.trim()).filter(Boolean),
+  };
+
+  try {
+    const response = await apiClient.post<{ success: boolean; message: string }>(
+      TASK_DETAIL_ENDPOINTS.CREATE,
+      payload,
+      { withCredentials: true }
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Thêm task detail thất bại");
     }
+    console.log("Thêm task detail thành công:", response.data.message);
+    alert(`Thêm task detail thành công! ${response.data.message}`);
+    return response.data;
+  } catch (err) {
+    console.error("Lỗi thêm task detail:", err);
+    throw err;
+  }
+};
+
+export const delete_taskDetail = async (taskId: string) => {
+  try {
+    const response = await apiClient.delete<{ success: boolean; message: string }>(TASK_DETAIL_ENDPOINTS.DELETE(taskId));
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Xóa task detail thất bại");
+    }
+  } catch (err) {
+    console.error("Lỗi xóa task detail:", err);
+  }
 }

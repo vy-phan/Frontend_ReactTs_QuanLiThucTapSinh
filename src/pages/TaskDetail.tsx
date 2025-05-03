@@ -2,13 +2,11 @@ import { useEffect, useState } from "react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useParams } from "react-router-dom";
-import { DroppableContainer } from "./TaskDetail/DroppableContainer";
-import { SortableItem } from "./TaskDetail/SortableItem";
-import { TaskDetailForm } from "./TaskDetail/TaskDetailForm";
-import { useTaskDetail } from "../hooks/taskDetailApi";
+import { DroppableContainer } from "../components/TaskDetail/DroppableContainer";
+import { SortableItem } from "../components/TaskDetail/SortableItem";
+import { TaskDetailForm } from "../components/TaskDetail/TaskDetailForm";
+import { useTaskDetail, addTaskDetail, delete_taskDetail } from "../hooks/taskDetailApi"; // Import delete_taskDetail
 import { TaskDetail as TaskDetailType } from "@/@type/type"; // Import type TaskDetail
-import apiClient from "../lib/apiClient";  // Import apiClient
-import { TASK_DETAIL_ENDPOINTS } from "../constants/api";
 
 export const TaskDetail = () => {
   const { taskId } = useParams<{ taskId: string }>();
@@ -19,23 +17,26 @@ export const TaskDetail = () => {
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
 
   useEffect(() => {
-    fetchTaskDetail(); 
+    fetchTaskDetail();
   }, []);
 
   const handleAddTaskDetail = async () => {
-    const payload = {
-      ...newTask,
-      task_id: taskId,
-      assignees: newTask.assignees.split(",").map((a) => a.trim()).filter(Boolean),
-    };
-
     try {
-      await apiClient.post(TASK_DETAIL_ENDPOINTS.CREATE, payload, { withCredentials: true });
+      await addTaskDetail(taskId || "", newTask); // Use the centralized API function
       setIsModalOpen(false);
       setNewTask({ title: "", description: "", status: "Đã giao", assignees: "" });
-      fetchTaskDetail();
+      fetchTaskDetail(); // Refresh the task details
     } catch (err) {
       console.error("Lỗi thêm task detail:", err);
+    }
+  };
+
+  const handleDeleteTaskDetail = async (taskId: string) => {
+    try {
+      await delete_taskDetail(taskId); // Call the delete function
+      fetchTaskDetail(); // Refresh the task details
+    } catch (err) {
+      console.error("Lỗi xóa task detail:", err);
     }
   };
 
@@ -81,7 +82,15 @@ export const TaskDetail = () => {
               <DroppableContainer id={tab}>
                 <SortableContext items={tabs[tab].map((t) => t.id.toString())} strategy={verticalListSortingStrategy}>
                   {tabs[tab].map((task: TaskDetailType) => (
-                    <SortableItem key={task.id} task={task} />
+                    <div key={task.id} className="relative">
+                      <SortableItem task={task} />
+                      <button
+                        onClick={() => handleDeleteTaskDetail(task.id.toString())}
+                        className="absolute top-2 right-2 bg-bg-transparent text-black px-2 py-1 rounded hover:bg-red-500"
+                      >
+                        x
+                      </button>
+                    </div>
                   ))}
                 </SortableContext>
               </DroppableContainer>
