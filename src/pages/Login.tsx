@@ -4,11 +4,14 @@ import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { cn } from '../lib/utils';
-import { FormData, loginSchema, LoginCredentials } from '@/@type/type';
+import { loginSchema, LoginCredentials } from '@/@type/type';
 import { ErrorMessage } from "@/components/common/ErrorMessage";
 import { useState } from 'react';
 import { useAuth } from '../context/authContext'; 
 import { useNavigate, useLocation } from 'react-router-dom';
+import { z } from 'zod';
+
+type FormData = z.infer<typeof loginSchema>;
 
 const Login = () => {
   // Sử dụng isLoading từ context thay vì state cục bộ nếu muốn disable toàn form khi context đang xử lý

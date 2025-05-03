@@ -19,6 +19,7 @@ import { useAuth } from '@/context/authContext';
 import { getAvatarUrl } from '@/utils/displayAvatar';
 import { useState } from 'react';
 import { ProfileDialog } from './ProfileDialog';
+import { Toaster } from 'sonner';
 
 
 const Layout = ({ children }: LayoutProps) => {
@@ -68,14 +69,6 @@ const Layout = ({ children }: LayoutProps) => {
                     <Link to="/intern">
                       <Image className="mr-2 h-4 w-4" />
                       <span>Thực tập</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="task detail">
-                    <Link to="/task-detail">
-                      <Image className="mr-2 h-4 w-4" />
-                      <span>Task detail</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -171,6 +164,7 @@ const Layout = ({ children }: LayoutProps) => {
             <main className="mt-6 transition-all duration-300">
               {children}
             </main>
+            <Toaster />
 
           </div>
         </SidebarInset>
