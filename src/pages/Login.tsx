@@ -14,22 +14,16 @@ import { z } from 'zod';
 type FormData = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  // Sử dụng isLoading từ context thay vì state cục bộ nếu muốn disable toàn form khi context đang xử lý
-  // const [loading, setLoading] = useState(false); // Có thể bỏ state này
   const [loginError, setLoginError] = useState<string | null>(null);
-  const { login, isLoading: isAuthLoading } = useAuth(); // Lấy hàm login và trạng thái loading từ context
+  const { login, isLoading: isAuthLoading } = useAuth(); 
   const navigate = useNavigate();
   const location = useLocation();
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(loginSchema)
   });
-
-  // Lấy đường dẫn đích sau khi login
-  const from = location.state?.from?.pathname || '/'; // Mặc định về trang chủ
-
+  const from = location.state?.from?.pathname || '/'; 
   const onSubmit = async (data: FormData) => {
-    // setLoading(true); // Không cần nếu dùng isAuthLoading
     setLoginError(null);
     const credentials: LoginCredentials = { email: data.email, password: data.password };
 
