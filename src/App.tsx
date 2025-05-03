@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
-import { TaskDetail } from './pages/task-detail';
+import {TaskDetail} from './pages/TaskDetail';
 import Login from './pages/Login'; // Thêm import cho trang login
 import Layout from './components/common/Layout';
 import { Outlet } from 'react-router-dom';
