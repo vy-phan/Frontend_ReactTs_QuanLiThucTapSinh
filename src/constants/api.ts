@@ -11,10 +11,10 @@ export const AUTH_ENDPOINTS = {
 
 export const USER_ENDPOINTS = {
     GET_ALL: '/user/',
-    GET_BY_ID: (id: number | string) => `/user/${id}/`,
+    GET_BY_ID: (id: number | string) => `/user/${id}`,
     CREATE: '/user/',
-    UPDATE: (id: number | string) => `/user/${id}/`,
-    DELETE: (id: number | string) => `/user/${id}/`,
+    UPDATE: (id: number | string) => `/user/${id}`,
+    DELETE: (id: number | string) => `/user/${id}`,
 };
 
 export const TASK_ENDPOINTS = {
