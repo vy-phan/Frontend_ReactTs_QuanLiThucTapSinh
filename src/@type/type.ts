@@ -27,6 +27,23 @@ export interface User {
   is_verified?: boolean;
   created_at?: string; // ISO format string
 }
+export interface Attachment {
+  id: number;
+  file_path: string;
+  uploaded_at: string | null; // ISO format or null
+}
+
+export interface Task {
+  id: number;
+  code: string;
+  title: string;
+  description: string | null;
+  deadline: string | null; // ISO format or null
+  status: string;
+  created_by: number;
+  created_at: string | null; // ISO format or null
+  attachments: Attachment[] | null; // Danh sách tệp đính kèm
+}
 
 export interface TaskDetail {
   id: string;  // ID của task
