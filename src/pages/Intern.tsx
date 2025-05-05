@@ -15,12 +15,15 @@ import { toast } from 'sonner';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AddModal } from '@/components/common/Intern/AddModal';
+import { EditModal } from '@/components/common/Intern/EditModal';
+import { DetailModal } from '@/components/common/Intern/DetailModal';
 
 const Intern = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -128,15 +131,11 @@ const Intern = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
-                        <Button 
-                          className="bg-blue-500 hover:bg-blue-600 text-white" 
-                          size="sm"
-                        >
-                          Xem
-                        </Button>
-                        <Button className='bg-amber-400 hover:bg-amber-500' size="sm">
-                          Sửa
-                        </Button>
+                        <DetailModal user={user} />
+                        <EditModal
+                          user={user}
+                          onSuccess={fetchUsers}
+                        />
                         <Button
                           variant="destructive"
                           size="sm"

@@ -49,6 +49,7 @@ export function AddModal() {
       const reponnse = await createUser(data);
       if (reponnse) {
         toast.success("Thêm người dùng thành công");
+        window.location.reload(); 
       }
     } catch (error) {
       console.error("Error submitting form:", error);
