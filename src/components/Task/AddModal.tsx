@@ -159,6 +159,7 @@ export const AddModal: React.FC<AddModalProps> = ({
                   type="datetime-local"
                   value={newTask.deadline || ""}
                   onChange={handleChange}
+                  min={new Date().toISOString().slice(0, 16)} // Giới hạn thời gian nhỏ nhất là hiện tại
                 />
               </div>
             </div>
