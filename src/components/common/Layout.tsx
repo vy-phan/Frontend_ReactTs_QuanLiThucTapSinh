@@ -106,13 +106,13 @@ const Layout = ({ children }: LayoutProps) => {
                     alt="Avatar" 
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = 'https://i.pinimg.com/236x/69/c4/2f/69c42f0fda1f02d565f835fe92ca6944.jpg';
+                      e.currentTarget.src = '/src/assets/avatar.png'; // Updated path
                     }}
                   />
                 </div>
                 <div className="flex flex-col items-start">
-                  <span className="text-sm font-medium">{user?.username || 'Thai Leader'}</span>
-                  <span className="text-xs text-sidebar-foreground/70">{user?.email || 'm@example.com'}</span>
+                  <span className="text-sm font-medium">{user?.username || 'Guest'}</span>
+                  <span className="text-xs text-sidebar-foreground/70">{user?.email || 'Guest@example.com'}</span>
                 </div>
               </button>
               <div 
