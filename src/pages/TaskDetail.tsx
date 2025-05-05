@@ -5,14 +5,17 @@ import { useParams } from "react-router-dom";
 import { DroppableContainer } from "../components/TaskDetail/DroppableContainer";
 import { SortableItem } from "../components/TaskDetail/SortableItem";
 import { TaskDetailForm } from "../components/TaskDetail/TaskDetailForm";
-import { useTaskDetail, addTaskDetail, delete_taskDetail } from "../hooks/taskDetailApi"; // Import delete_taskDetail
+import { TaskDetailEditForm } from "../components/TaskDetail/TaskDetailEditForm"; // Import TaskDetailEditForm
+import { useTaskDetail, addTaskDetail, delete_taskDetail, updateTaskDetail } from "../hooks/taskDetailApi"; // Import updateTaskDetail
 import { TaskDetail as TaskDetailType } from "@/@type/type"; // Import type TaskDetail
 
-export const TaskDetail = () => {
+ const TaskDetail = () => {
   const { taskId } = useParams<{ taskId: string }>();
   const { tabs, setTabs, fetchTaskDetail, updateTaskStatus } = useTaskDetail(taskId);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // State for edit modal
   const [newTask, setNewTask] = useState({ title: "", description: "", status: "Đã giao", assignees: "" });
+  const [taskToEdit, setTaskToEdit] = useState<any>(null); // State for the task being edited
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
 
@@ -28,6 +31,17 @@ export const TaskDetail = () => {
       fetchTaskDetail(); // Refresh the task details
     } catch (err) {
       console.error("Lỗi thêm task detail:", err);
+    }
+  };
+
+  const handleEditTaskDetail = async () => {
+    try {
+      await updateTaskDetail(taskToEdit.id.toString(), taskToEdit); // Use the centralized API function
+      setIsEditModalOpen(false);
+      setTaskToEdit(null);
+      fetchTaskDetail(); // Refresh the task details
+    } catch (err) {
+      console.error("Lỗi cập nhật task detail:", err);
     }
   };
 
@@ -74,6 +88,13 @@ export const TaskDetail = () => {
         setNewTask={setNewTask} 
         onSubmit={handleAddTaskDetail} 
       />
+      <TaskDetailEditForm 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+        taskToEdit={taskToEdit} 
+        setTaskToEdit={setTaskToEdit} 
+        onSubmit={handleEditTaskDetail} 
+      />
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <div className="flex flex-wrap gap-6 justify-center">
           {Object.keys(tabs).map((tab) => (
@@ -86,9 +107,18 @@ export const TaskDetail = () => {
                       <SortableItem task={task} />
                       <button
                         onClick={() => handleDeleteTaskDetail(task.id.toString())}
-                        className="absolute top-2 right-2 bg-bg-transparent text-black px-2 py-1 rounded hover:bg-red-500"
+                        className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
                       >
-                        x
+                        Xóa
+                      </button>
+                      <button
+                        onClick={() => {
+                          setTaskToEdit(task); // Set the task to edit
+                          setIsEditModalOpen(true); // Open the edit modal
+                        }}
+                        className="absolute top-2 right-12 bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
+                      >
+                        Sửa
                       </button>
                     </div>
                   ))}
@@ -101,3 +131,4 @@ export const TaskDetail = () => {
     </div>
   );
 };
+export default TaskDetail;

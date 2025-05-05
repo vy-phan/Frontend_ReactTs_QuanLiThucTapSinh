@@ -85,6 +85,29 @@ export const addTaskDetail = async (taskId: string, newTask: any) => {
   }
 };
 
+//api update task detail
+export const updateTaskDetail = async (taskId: string, updatedTask: any) => {
+  const payload = {
+    ... updatedTask,  
+  }
+  try {
+    const response = await apiClient.put<{ success: boolean; message: string }>(
+      TASK_DETAIL_ENDPOINTS.UPDATE(taskId),
+      payload,
+      { withCredentials: true }
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Cập nhật task detail thất bại");
+    }
+    console.log("Cập nhật task detail thành công:", response.data.message);
+    alert(`Cập nhật task detail thành công! ${response.data.message}`);
+    return response.data;
+  } catch (err) {
+    console.error("Lỗi cập nhật task detail:", err);
+    throw err;
+  }
+}
+
 export const delete_taskDetail = async (taskId: string) => {
   try {
     const response = await apiClient.delete<{ success: boolean; message: string }>(TASK_DETAIL_ENDPOINTS.DELETE(taskId));
