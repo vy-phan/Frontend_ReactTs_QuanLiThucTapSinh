@@ -4,7 +4,15 @@ import { TASK_ENDPOINTS } from "../constants/api"; // Đường dẫn API cho ta
 import { Task } from "@/@type/type"; // Interface Task đã được định nghĩa
 
 // Hook quản lý task
-export const useTask = (taskId?: string) => {
+export const useTask = (taskId?: string): {
+  tasks: Task[];
+  loading: boolean;
+  error: string | null;
+  fetchTask: () => Promise<void>;
+  addTask: (newTask: Task | FormData) => Promise<void>;
+  updateTask: (taskId: string, updatedTask: Partial<Task>) => Promise<void>;
+  deleteTask: (id: number | string) => Promise<void>;
+} => {
   const [tasks, setTasks] = useState<Task[]>([]); // Danh sách task
   const [loading, setLoading] = useState<boolean>(false); // Trạng thái loading
   const [error, setError] = useState<string | null>(null); // Lỗi nếu có
@@ -39,7 +47,7 @@ export const useTask = (taskId?: string) => {
         {
           headers: isFormData
             ? { "Content-Type": "multipart/form-data" } // Nếu là FormData, đặt Content-Type
-            : undefined,
+            : { "Content-Type": "application/json" }, // Nếu là JSON
           withCredentials: true,
         }
       );
@@ -80,17 +88,21 @@ export const useTask = (taskId?: string) => {
   };
 
   // Xóa task
-  const deleteTask = async (taskId: string) => {
+  const deleteTask = async (id: number | string): Promise<void> => {
     try {
+      console.log("Gửi yêu cầu xóa task với ID:", id); // Log ID task
       const response = await apiClient.delete<{ success: boolean; message: string }>(
-        TASK_ENDPOINTS.DELETE(taskId),
-        { withCredentials: true }
+        TASK_ENDPOINTS.DELETE(id), // Gửi yêu cầu đến endpoint xóa
+        {
+          withCredentials: true, // Gửi cookie hoặc token nếu cần
+        }
       );
+  
       if (!response.data.success) {
         throw new Error(response.data.message || "Xóa task thất bại");
       }
+  
       console.log("Xóa task thành công:", response.data.message);
-      setTasks((prev) => prev.filter((task) => task.id.toString() !== taskId)); // Loại bỏ task khỏi danh sách
     } catch (err) {
       console.error("Lỗi xóa task:", err);
       throw err;
