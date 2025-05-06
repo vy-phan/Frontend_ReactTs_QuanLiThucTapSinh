@@ -3,8 +3,11 @@ export const formatDate = (dateString?: string): string => {
   
   const date = new Date(dateString);
   return date.toLocaleDateString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
+    weekday: "long", // Hiển thị thứ (ví dụ: Thứ Hai)
+    year: "numeric", // Hiển thị năm
+    month: "long", // Hiển thị tháng (ví dụ: Tháng Năm)
+    day: "numeric", // Hiển thị ngày
+    hour: "2-digit", // Hiển thị giờ
+    minute: "2-digit", // Hiển thị phút
   });
 };

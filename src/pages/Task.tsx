@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { AddModal } from "../components/Task/AddModal"; // Import AddModal
 import { EditTask } from "../components/Task/EditTask"; // Import EditTask
 import { Link } from "react-router-dom";
+// import dateUtil
+import { formatDate } from "../utils/dateUtils"; 
 
 export const Task = () => {
   const { taskId } = useParams<{ taskId: string }>();
@@ -98,7 +100,11 @@ export const Task = () => {
       fetchTask();
     } catch (err) {
       console.error("Lỗi xóa task:", err);
-      toast.error("Xóa task thất bại");
+      if (err instanceof Error) {
+        toast.error(err.message || "Xóa task thất bại");
+      } else {
+        toast.error("Xóa task thất bại");
+      }
     }
   };
 
@@ -131,18 +137,23 @@ export const Task = () => {
             className="bg-white rounded-xl shadow-lg p-4 w-full sm:w-[45%] md:w-[30%]"
           >
             <div className="mb-4 p-2 bg-gray-50 rounded-md">
-              <h3 className="text-lg font-medium">{task.title}</h3>
-              <p className="text-sm text-gray-600">Mô tả: {task.description}</p>
-              <p className="text-sm text-gray-600">Trạng thái: {task.status}</p>
-              <p className="text-sm text-gray-600">
-                Người tạo: {task.created_by}
+              <h3 className="text-lg font-medium"><span className="text-black-700 text-sm font-semibold">{task.title}</span></h3>
+              <p className="text-sm text-gray-600">Mô tả: <span className="text-black-700 text-sm font-semibold">{task.description}</span></p>
+              <p className="text-sm text-gray-600">Trạng thái: <span className="text-black-700 text-sm font-semibold">{task.status}</span></p>
+              <p className="text-sm text-gray-700">
+                Người tạo:
+                <span className="text-black-700 text-sm font-semibold">
+                  {" "}
+                  <span className="text-black-700 text-sm font-semibold">{task.created_by_username || "Không xác định"}</span>
+                </span>
               </p>
               <p className="text-sm text-gray-600">
-                Hạn chót:{" "}
-                {task.deadline
-                  ? new Date(task.deadline).toLocaleString()
-                  : "Không có"}
-              </p>
+  Thời hạn:{" "}
+  <span className="text-black-700 text-sm font-semibold">
+    {formatDate(task.deadline?.toString() || "")}
+  </span>
+</p>
+              {/* Phiên ra giờ phút, thứ ngày tháng năm cho người dùng dễ đọc Ví dụ: 4 giờ 30 phút, ngày... tháng.... năm ...*/}
             </div>
             <div className="flex justify-end space-x-2 mt-2">
               <Link
