@@ -18,7 +18,7 @@ export const USER_ENDPOINTS = {
 
 export const TASK_ENDPOINTS = {
   GET_ALL: "/task/",
-  GET_BY_ID: (id: number | string) => `/task/${id}/`,
+  GET_BY_ID: (id: number | string) => `/task/${id}`,
   CREATE: "/task/",
   UPDATE: (id: number | string) => `/task/${id}`,
   DELETE: (id: number | string) => `/task/${id}`,
@@ -35,4 +35,5 @@ export const TASK_DETAIL_ENDPOINTS = {
   DELETE: (id: number | string) => `/task_detail/${id}`,
   UPDATE_STATUS: (id: number | string, status: string) =>
     `/task_detail/${id}/status/${status}/`,
+  GET_ASSIGNEESS_BY_TASKDETAIL_ID: (id: number | string) =>`task_detail/${id}/assignees`,
 };

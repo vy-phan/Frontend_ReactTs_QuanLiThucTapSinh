@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import apiClient from "../lib/apiClient";  // Đảm bảo apiClient đã được import
 import { TASK_DETAIL_ENDPOINTS } from "../constants/api";
 import { TaskDetail } from "@/@type/type"; // Import kiểu TaskDetail
-
+import {toast} from "sonner"
 export const useTaskDetail = (taskId: string | undefined) => {
   const [tabs, setTabs] = useState<Record<string, TaskDetail[]>>({
     "Đã giao": [],
@@ -33,6 +33,9 @@ export const useTaskDetail = (taskId: string | undefined) => {
     }
   };
 
+
+  
+
   // Hàm cập nhật trạng thái task
   const updateTaskStatus = async (taskId: string, status: string) => {
     try {
@@ -44,7 +47,7 @@ export const useTaskDetail = (taskId: string | undefined) => {
         throw new Error(response.data.message || "Cập nhật trạng thái thất bại");
       }else{
         console.log("Cập nhật trạng thái thành công:", response.data.message);
-        alert(`Cập nhật trạng thái thành công! ${status}`);
+        toast.success(`Cập nhật trạng thái thành công! ${status}`);
       }
     } catch (err) {
       console.error("Lỗi cập nhật trạng thái:", err);
@@ -61,11 +64,17 @@ export const useTaskDetail = (taskId: string | undefined) => {
 };
 
 export const addTaskDetail = async (taskId: string, newTask: any) => {
+  // Kiểm tra lại trước khi gửi
+  console.log("Trước khi gửi task:", newTask);
+
   const payload = {
     ...newTask,
     task_id: taskId,
-    assignees: newTask.assignees.split(",").map((a: string) => a.trim()).filter(Boolean),
+    assignees: newTask.assignees
+       // Loại bỏ giá trị rỗng
   };
+
+  console.log("Payload gửi lên server:", payload);
 
   try {
     const response = await apiClient.post<{ success: boolean; message: string }>(
@@ -77,13 +86,17 @@ export const addTaskDetail = async (taskId: string, newTask: any) => {
       throw new Error(response.data.message || "Thêm task detail thất bại");
     }
     console.log("Thêm task detail thành công:", response.data.message);
-    alert(`Thêm task detail thành công! ${response.data.message}`);
+    toast.success(`Thêm task detail thành công! ${response.data.message}`);
     return response.data;
   } catch (err) {
     console.error("Lỗi thêm task detail:", err);
     throw err;
   }
 };
+
+
+
+
 
 //api update task detail
 export const updateTaskDetail = async (taskId: string, updatedTask: any) => {
@@ -100,7 +113,7 @@ export const updateTaskDetail = async (taskId: string, updatedTask: any) => {
       throw new Error(response.data.message || "Cập nhật task detail thất bại");
     }
     console.log("Cập nhật task detail thành công:", response.data.message);
-    alert(`Cập nhật task detail thành công! ${response.data.message}`);
+    toast.success(`Cập nhật task detail thành công! ${response.data.message}`);
     return response.data;
   } catch (err) {
     console.error("Lỗi cập nhật task detail:", err);
@@ -118,3 +131,19 @@ export const delete_taskDetail = async (taskId: string) => {
     console.error("Lỗi xóa task detail:", err);
   }
 }
+
+  //hàm lấy danh sách assignees theo task_detail_id
+  export const getAssigneesByTaskDetailId = async (taskDetailId: string) => {
+    try {
+      const response = await apiClient.get<{ success: boolean; data: any[] }>(
+        TASK_DETAIL_ENDPOINTS.GET_ASSIGNEESS_BY_TASKDETAIL_ID(taskDetailId)
+      );
+      if (!response.data.success) {
+        throw new Error("Không lấy được danh sách assignees");
+      }
+      return response.data.data;
+    } catch (err) {
+      console.error("Lỗi khi lấy danh sách assignees:", err);
+      throw err;
+    }
+  };
