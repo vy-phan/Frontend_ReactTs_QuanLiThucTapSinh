@@ -22,8 +22,6 @@ const Intern = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -127,7 +125,7 @@ const Intern = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {user.start_date ? new Date(user.start_date).toLocaleDateString() : 'N/A'}
+                      {user.start_date ? new Date(user.start_date).toLocaleDateString('vi-VN') : 'N/A'}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
