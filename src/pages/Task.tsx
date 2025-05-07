@@ -7,8 +7,9 @@ import { toast } from "sonner";
 import { AddModal } from "../components/Task/AddModal"; // Import AddModal
 import { EditTask } from "../components/Task/EditTask"; // Import EditTask
 import { Link } from "react-router-dom";
-// import dateUtil
-import { formatDate } from "../utils/dateUtils"; 
+import { formatDate } from "../utils/dateUtils"; // Import hàm formatDate
+import { TASK_ENDPOINTS } from "../constants/api"; // Import endpoint API
+import apiClient from "../lib/apiClient"; // Import apiClient
 
 export const Task = () => {
   const { taskId } = useParams<{ taskId: string }>();
@@ -27,6 +28,9 @@ export const Task = () => {
     attachments: [],
   });
   const [editingTask, setEditingTask] = useState<TaskType | null>(null); // State để lưu task đang chỉnh sửa
+  const [isModalOpen, setIsModalOpen] = useState(false); // State để quản lý modal
+  const [selectedTask, setSelectedTask] = useState<TaskType | null>(null); // Task được chọn để xóa
+  const [incompleteDetailsCount, setIncompleteDetailsCount] = useState(0); // Số lượng task_detail chưa hoàn thành
 
   useEffect(() => {
     fetchTask();
@@ -42,35 +46,53 @@ export const Task = () => {
     }
   }, [user]);
 
-  const handleAddTask = async (data: FormData | TaskType) => {
+  const fetchIncompleteDetailsCount = async (taskId: number) => {
     try {
-      let formData: FormData;
+      const response = await apiClient.get<{ success: boolean; count: number }>(
+        TASK_ENDPOINTS.COUNT_INCOMPLETE_DETAILS(taskId)
+      );
 
-      if (data instanceof FormData) {
-        formData = data;
-      } else {
-        formData = new FormData();
-        formData.append("code", data.code);
-        formData.append("title", data.title);
-        formData.append("description", data.description || "");
-        formData.append(
-          "deadline",
-          data.deadline ? new Date(data.deadline).toISOString() : ""
+      if (!response.data.success) {
+        throw new Error(
+          "Không thể lấy số lượng chi tiết công việc chưa hoàn thành"
         );
-        formData.append("status", data.status);
-        formData.append("created_by", data.created_by.toString());
-
-        if (attachments.length > 0) {
-          attachments.forEach((file) => formData.append("attachments", file));
-        }
       }
 
-      console.log("Dữ liệu gửi lên:", Array.from(formData.entries()));
-      await addTask(formData);
+      setIncompleteDetailsCount(response.data.count);
+    } catch (err) {
+      console.error(
+        "Lỗi khi lấy số lượng chi tiết công việc chưa hoàn thành:",
+        err
+      );
+      toast.error("Không thể lấy số lượng chi tiết công việc chưa hoàn thành");
+    }
+  };
 
+  const openDeleteModal = (task: TaskType) => {
+    setSelectedTask(task); // Lưu task được chọn
+    fetchIncompleteDetailsCount(task.id); // Lấy số lượng chi tiết công việc chưa hoàn thành
+    setIsModalOpen(true); // Hiển thị modal
+  };
+
+  const closeDeleteModal = () => {
+    setIsModalOpen(false); // Đóng modal
+    setSelectedTask(null); // Xóa task được chọn
+    setIncompleteDetailsCount(0); // Reset số lượng chi tiết công việc chưa hoàn thành
+  };
+
+  const handleDeleteTask = async () => {
+    if (!selectedTask) return;
+
+    try {
+      console.log("Bắt đầu xóa task với ID:", selectedTask.id);
+      await deleteTask(selectedTask.id.toString());
+      toast.success("Xóa task thành công");
       fetchTask();
     } catch (err) {
-      console.error("Lỗi thêm task:", err);
+      console.error("Lỗi xóa task:", err);
+      toast.error("Xóa task thất bại");
+    } finally {
+      closeDeleteModal(); // Đóng modal sau khi xóa
     }
   };
 
@@ -79,32 +101,33 @@ export const Task = () => {
       await updateTask(updatedTask.id.toString(), updatedTask);
       toast.success("Cập nhật task thành công");
       fetchTask();
-      setEditingTask(null);
+      setEditingTask(null); // Đóng modal chỉnh sửa
     } catch (err) {
       console.error("Lỗi cập nhật task:", err);
       toast.error("Cập nhật task thất bại");
     }
   };
-  // Tạo thông báo xác nhận xóa task
-  const confirmDeleteTask = (taskId: string) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa task này?")) {
-      handleDeleteTask(taskId);
-    }
-  };
 
-  const handleDeleteTask = async (taskId: string) => {
+  const handleAddTask = async () => {
     try {
-      console.log("Bắt đầu xóa task với ID:", taskId);
-      await deleteTask(taskId);
-      toast.success("Xóa task thành công");
+      await addTask(newTask);
+      toast.success("Thêm task thành công");
       fetchTask();
+      setNewTask({
+        id: 0,
+        code: "",
+        title: "",
+        description: "",
+        deadline: "",
+        status: "Đã giao",
+        created_by: user?.id || 0,
+        created_at: "",
+        attachments: [],
+      });
+      setAttachments([]);
     } catch (err) {
-      console.error("Lỗi xóa task:", err);
-      if (err instanceof Error) {
-        toast.error(err.message || "Xóa task thất bại");
-      } else {
-        toast.error("Xóa task thất bại");
-      }
+      console.error("Lỗi thêm task:", err);
+      toast.error("Thêm task thất bại");
     }
   };
 
@@ -130,6 +153,42 @@ export const Task = () => {
         />
       )}
 
+      {/* Modal xác nhận xóa */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+            <h2 className="text-lg font-bold mb-4">Xác nhận xóa</h2>
+            <p className="text-gray-700 mb-6">
+              Bạn có chắc chắn muốn xóa task{" "}
+              <span className="font-semibold">{selectedTask?.title}</span>{" "}
+              không? <br />
+              {incompleteDetailsCount > 0 && (
+                <span className="text-red-600 font-bold">
+                  Chúng ta còn {incompleteDetailsCount} chi tiết công việc chưa
+                  hoàn thành!
+                </span>
+              )}
+              
+              
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={closeDeleteModal}
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleDeleteTask}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-6 justify-center">
         {tasks.map((task: TaskType) => (
           <div
@@ -137,23 +196,29 @@ export const Task = () => {
             className="bg-white rounded-xl shadow-lg p-4 w-full sm:w-[45%] md:w-[30%]"
           >
             <div className="mb-4 p-2 bg-gray-50 rounded-md">
-              <h3 className="text-lg font-medium"><span className="text-black-700 text-sm font-semibold">{task.title}</span></h3>
-              <p className="text-sm text-gray-600">Mô tả: <span className="text-black-700 text-sm font-semibold">{task.description}</span></p>
-              <p className="text-sm text-gray-600">Trạng thái: <span className="text-black-700 text-sm font-semibold">{task.status}</span></p>
-              <p className="text-sm text-gray-700">
-                Người tạo:
+              <h3 className="text-lg font-medium">
                 <span className="text-black-700 text-sm font-semibold">
-                  {" "}
-                  <span className="text-black-700 text-sm font-semibold">{task.created_by_username || "Không xác định"}</span>
+                  {task.title}
+                </span>
+              </h3>
+              <p className="text-sm text-gray-600">
+                Mô tả:{" "}
+                <span className="text-black-700 text-sm font-semibold">
+                  {task.description}
                 </span>
               </p>
               <p className="text-sm text-gray-600">
-  Thời hạn:{" "}
-  <span className="text-black-700 text-sm font-semibold">
-    {formatDate(task.deadline?.toString() || "")}
-  </span>
-</p>
-              {/* Phiên ra giờ phút, thứ ngày tháng năm cho người dùng dễ đọc Ví dụ: 4 giờ 30 phút, ngày... tháng.... năm ...*/}
+                Trạng thái:{" "}
+                <span className="text-black-700 text-sm font-semibold">
+                  {task.status}
+                </span>
+              </p>
+              <p className="text-sm text-gray-600">
+                Thời hạn:{" "}
+                <span className="text-black-700 text-sm font-semibold">
+                  {formatDate(task.deadline?.toString() || "")}
+                </span>
+              </p>
             </div>
             <div className="flex justify-end space-x-2 mt-2">
               <Link
@@ -170,7 +235,7 @@ export const Task = () => {
                 Sửa
               </button>
               <button
-                onClick={() => confirmDeleteTask(task.id.toString())} // Gọi hàm xác nhận xóa
+                onClick={() => openDeleteModal(task)} // Mở modal xác nhận xóa
                 className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
               >
                 Xóa
