@@ -103,9 +103,20 @@ export const useTask = (taskId?: string): {
       }
   
       console.log("Xóa task thành công:", response.data.message);
-    } catch (err) {
+  
+      // Cập nhật danh sách task sau khi xóa
+      setTasks((prev) => prev.filter((task) => task.id.toString() !== id.toString()));
+    } catch (err: any) {
       console.error("Lỗi xóa task:", err);
-      throw err;
+  
+      // Kiểm tra lỗi từ server
+      if (err.response && err.response.data) {
+        const errorMessage = err.response.data.error || "Xóa task thất bại";
+        throw new Error(errorMessage);
+      }
+  
+      // Lỗi không xác định
+      throw new Error("Không thể kết nối đến server");
     }
   };
 
