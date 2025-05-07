@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { formatDate } from "../utils/dateUtils"; // Import hàm formatDate
 import { TASK_ENDPOINTS } from "../constants/api"; // Import endpoint API
 import apiClient from "../lib/apiClient"; // Import apiClient
+import { Badge } from "@/components/ui/badge";
 
 export const Task = () => {
   const { taskId } = useParams<{ taskId: string }>();
@@ -196,10 +197,13 @@ export const Task = () => {
             className="bg-white rounded-xl shadow-lg p-4 w-full sm:w-[45%] md:w-[30%]"
           >
             <div className="mb-4 p-2 bg-gray-50 rounded-md">
-              <h3 className="text-lg font-medium">
+              <h3 className="text-lg font-medium flex justify-between items-center">
                 <span className="text-black-700 text-sm font-semibold">
                   {task.title}
                 </span>
+                <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                  {task.code}
+                </Badge>
               </h3>
               <p className="text-sm text-gray-600">
                 Mô tả:{" "}

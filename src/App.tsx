@@ -8,6 +8,7 @@ import { Outlet } from 'react-router-dom';
 import Task from './pages/Task';
 import Intern from './pages/Intern';
 import { useAuth } from './context/authContext';
+import Searching from './pages/Searching';
 
 function App() {
   const { user } = useAuth();
@@ -23,13 +24,15 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/task" element={<Task />} />
           {user?.role === 'MANAGER' ? (
-            <Route path="/intern" element={<Intern />} />
-          ) : (
-            <Route path="*" element={<NotFound />} />
-          ) 
+              <Route path="/intern" element={<Intern />} />
+            ) : (
+              <Route path="*" element={<NotFound />} />
+            ) 
           }
           <Route path="/task_detail/:taskId" element={<TaskDetail />} />
+          <Route path="/search" element={<Searching />} />
         </Route>
+
         {/* Route not found - không có layout */}
         <Route path="*" element={<NotFound />} />
       </Routes>

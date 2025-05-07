@@ -20,12 +20,14 @@ import { getAvatarUrl } from '@/utils/displayAvatar';
 import { useState } from 'react';
 import { ProfileDialog } from './ProfileDialog';
 import { Toaster } from 'sonner';
+import { ChangePasswordDialog } from './ChangePasswordDialog';
 
 
 const Layout = ({ children }: LayoutProps) => {
   // Lấy thông tin user từ auth context
   const { user } = useAuth();
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+  const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] = useState(false);
 
   return (
     <SidebarProvider>
@@ -64,26 +66,30 @@ const Layout = ({ children }: LayoutProps) => {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="Settings">
-                    <Link to="/intern">
-                      <Image className="mr-2 h-4 w-4" />
-                      <span>Thực tập</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {
+                  user?.role === 'MANAGER' && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild tooltip="Settings">
+                        <Link to="/intern">
+                          <Image className="mr-2 h-4 w-4" />
+                          <span>Thực tập</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                }
               </SidebarMenu>
             </div>
-            
+
             <div className="px-2 py-2">
               {/* tach 2 */}
-              <h2 className="px-4 text-xs font-semibold tracking-tight">Documentation</h2>
+              <h2 className="px-4 text-xs font-semibold tracking-tight">Tiện ích</h2>
               <SidebarMenu className="mt-2">
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="Documentation">
-                    <Link to="/docs">
+                  <SidebarMenuButton asChild tooltip="Tiện ích">
+                    <Link to="/search">
                       <Plus className="mr-2 h-4 w-4" />
-                      <span>Documentation</span>
+                      <span>Tìm kiếm</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -92,7 +98,7 @@ const Layout = ({ children }: LayoutProps) => {
           </SidebarContent>
           <SidebarFooter className="mt-auto p-4">
             <div className="relative">
-              <button 
+              <button
                 className="flex items-center gap-2 w-full rounded-md px-2 py-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -101,9 +107,9 @@ const Layout = ({ children }: LayoutProps) => {
                 }}
               >
                 <div className="w-10 h-10 rounded-full overflow-hidden">
-                  <img 
+                  <img
                     src={getAvatarUrl(user?.avatar)}
-                    alt="Avatar" 
+                    alt="Avatar"
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.currentTarget.src = '/src/assets/avatar.png'; // Updated path
@@ -115,17 +121,24 @@ const Layout = ({ children }: LayoutProps) => {
                   <span className="text-xs text-sidebar-foreground/70">{user?.email || 'Guest@example.com'}</span>
                 </div>
               </button>
-              <div 
+              <div
                 id="avatar-dropdown"
                 className="absolute bottom-full left-0 mb-2 w-full bg-sidebar-accent rounded-md shadow-lg py-1 hidden border border-[#2d3748]"
               >
-                <button 
+                <button
                   className="block px-4 py-2 text-sm hover:bg-[#1e40af] w-full text-left transition-colors duration-200"
                   onClick={() => setIsProfileDialogOpen(true)}
                 >
                   Thông tin cá nhân
                 </button>
-                <button 
+                <button
+                  className="block px-4 py-2 text-sm hover:bg-[#1e40af] w-full text-left transition-colors duration-200"
+                  onClick={() => setIsChangePasswordDialogOpen(true)}
+
+                >
+                  Đổi mật khẩu
+                </button>
+                <button
                   className="block px-4 py-2 text-sm hover:bg-[#1e40af] w-full text-left transition-colors duration-200"
                   onClick={async () => {
                     try {
@@ -146,6 +159,13 @@ const Layout = ({ children }: LayoutProps) => {
                   onOpenChange={() => setIsProfileDialogOpen(false)}
                   user={user}
                 />
+
+                <ChangePasswordDialog
+                  open={isChangePasswordDialogOpen}
+                  onOpenChange={setIsChangePasswordDialogOpen}
+                  userId={user?.id || 0}
+                />
+
 
               </div>
             </div>

@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import apiClient from "../lib/apiClient";  // Đảm bảo apiClient đã được import
 import { TASK_DETAIL_ENDPOINTS } from "../constants/api";
 import { TaskDetail } from "@/@type/type"; // Import kiểu TaskDetail
-import {toast} from "sonner"
+import { toast } from "sonner"
+
 export const useTaskDetail = (taskId: string | undefined) => {
   const [tabs, setTabs] = useState<Record<string, TaskDetail[]>>({
     "Đã giao": [],
@@ -34,7 +35,7 @@ export const useTaskDetail = (taskId: string | undefined) => {
   };
 
 
-  
+
 
   // Hàm cập nhật trạng thái task
   const updateTaskStatus = async (taskId: string, status: string) => {
@@ -45,7 +46,7 @@ export const useTaskDetail = (taskId: string | undefined) => {
       );
       if (!response.data.success) {
         throw new Error(response.data.message || "Cập nhật trạng thái thất bại");
-      }else{
+      } else {
         console.log("Cập nhật trạng thái thành công:", response.data.message);
         toast.success(`Cập nhật trạng thái thành công! ${status}`);
       }
@@ -71,7 +72,7 @@ export const addTaskDetail = async (taskId: string, newTask: any) => {
     ...newTask,
     task_id: taskId,
     assignees: newTask.assignees
-       // Loại bỏ giá trị rỗng
+    // Loại bỏ giá trị rỗng
   };
 
   console.log("Payload gửi lên server:", payload);
@@ -101,7 +102,7 @@ export const addTaskDetail = async (taskId: string, newTask: any) => {
 //api update task detail
 export const updateTaskDetail = async (taskId: string, updatedTask: any) => {
   const payload = {
-    ... updatedTask,  
+    ...updatedTask,
   }
   try {
     const response = await apiClient.put<{ success: boolean; message: string }>(
@@ -132,18 +133,18 @@ export const delete_taskDetail = async (taskId: string) => {
   }
 }
 
-  //hàm lấy danh sách assignees theo task_detail_id
-  export const getAssigneesByTaskDetailId = async (taskDetailId: string) => {
-    try {
-      const response = await apiClient.get<{ success: boolean; data: any[] }>(
-        TASK_DETAIL_ENDPOINTS.GET_ASSIGNEESS_BY_TASKDETAIL_ID(taskDetailId)
-      );
-      if (!response.data.success) {
-        throw new Error("Không lấy được danh sách assignees");
-      }
-      return response.data.data;
-    } catch (err) {
-      console.error("Lỗi khi lấy danh sách assignees:", err);
-      throw err;
+//hàm lấy danh sách assignees theo task_detail_id
+export const getAssigneesByTaskDetailId = async (taskDetailId: string) => {
+  try {
+    const response = await apiClient.get<{ success: boolean; data: any[] }>(
+      TASK_DETAIL_ENDPOINTS.GET_ASSIGNEESS_BY_TASKDETAIL_ID(taskDetailId)
+    );
+    if (!response.data.success) {
+      throw new Error("Không lấy được danh sách assignees");
     }
-  };
+    return response.data.data;
+  } catch (err) {
+    console.error("Lỗi khi lấy danh sách assignees:", err);
+    throw err;
+  }
+};

@@ -8,7 +8,7 @@ export const loginUser = async (credentials: LoginCredentials): Promise<User> =>
   if (response.data.success && response.data.data?.user) {
       return response.data.data.user;
   } else {
-      throw new Error(response.data.message || 'Login failed');
+      throw new Error(response.data.message || 'Đăng nhập thất bại');
   }
 };
 
@@ -17,7 +17,7 @@ export const logoutUser = async (): Promise<void> => {
   if(response.data.success) {
     return;
   } else {
-    throw new Error(response.data.message || 'Logout failed');
+    throw new Error(response.data.message || 'Đăng xuất thất bại');
   }
 };
 
@@ -26,7 +26,7 @@ export const checkUserAuthStatus = async (): Promise<User> => {
    if (response.data.success && response.data.data) {
       return response.data.data;
   } else {
-      throw new Error(response.data.message || 'Failed to fetch current user');
+      throw new Error(response.data.message || 'Lỗi kiểm tra trạng thái đăng nhập');
   }
 };
 
