@@ -26,6 +26,12 @@ export const SortableItem = ({ task }: { task: any }) => {
             <p className="text-xs text-gray-400 mt-2">
                 Cập nhật: {new Date(task.updated_at).toLocaleString()}
             </p>
+            <div className="mt-2 text-sm text-gray-600">
+                <strong>Người làm:</strong>{" "}
+                {task.assignees && task.assignees.length > 0
+                    ? task.assignees.map((assignee: any) => assignee.username).join(", ")
+                    : "Chưa có"}
+            </div>
         </div>
     );
 };

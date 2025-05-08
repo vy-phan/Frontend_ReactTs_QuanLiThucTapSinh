@@ -95,8 +95,8 @@ const TaskDetail = () => {
           <h2 className="text-xl font-semibold text-blue-700 mb-2">{task.title}</h2>
           <p className="text-gray-600">{task.description}</p>
           {task.deadline
-                  ? new Date(task.deadline).toLocaleString()
-                  : "Không có"}
+            ? new Date(task.deadline).toLocaleString()
+            : "Không có"}
         </div>
       ) : (
         <p className="text-center text-red-500 mb-4">Không tìm thấy thông tin task.</p>
@@ -133,6 +133,7 @@ const TaskDetail = () => {
                   {tabs[tab].map((task: TaskDetailType) => (
                     <div key={task.id} className="relative">
                       <SortableItem task={task} />
+                  
                       <button
                         onClick={() => handleDeleteTaskDetail(task.id.toString())}
                         className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"

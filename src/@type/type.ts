@@ -46,14 +46,16 @@ export interface Task {
 }
 
 
+
+
 export interface TaskDetail {
-  id: string;  // ID của task
-  title: string;  // Tiêu đề của task
-  description: string;  // Mô tả của task
+  id: string;
+  title: string;
+  description: string;
   status: 'Đã giao' | 'Đang thực hiện' | 'Hoàn thành';  // Trạng thái của task
-  // Thêm bất kỳ thuộc tính nào bạn cần ở đây, ví dụ như thời gian tạo, cập nhật, v.v.
   createdAt: string;
   updatedAt: string;
+  assignees: { id: number; username: string }[]; // Thêm danh sách người làm
 }
 
 export interface AuthContextType {
