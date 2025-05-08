@@ -85,7 +85,6 @@ export const Task = () => {
     if (!selectedTask) return;
 
     try {
-      console.log("Bắt đầu xóa task với ID:", selectedTask.id);
       await deleteTask(selectedTask.id.toString());
       toast.success("Xóa task thành công");
       fetchTask();
@@ -133,120 +132,142 @@ export const Task = () => {
   };
 
   return (
-    <div className="p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold text-center mb-10 text-gray-700">
-        Danh sách công việc
-      </h1>
-      <div className="text-center mb-6">
-        <AddModal
-          onSubmit={handleAddTask}
-          newTask={newTask}
-          setNewTask={setNewTask}
-          setAttachments={setAttachments}
-        />
-      </div>
-
-      {editingTask && (
-        <EditTask
-          onSubmit={handleUpdateTask}
-          editingTask={editingTask}
-          setEditingTask={setEditingTask}
-        />
-      )}
-
-      {/* Modal xác nhận xóa */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-96">
-            <h2 className="text-lg font-bold mb-4">Xác nhận xóa</h2>
-            <p className="text-gray-700 mb-6">
-              Bạn có chắc chắn muốn xóa task{" "}
-              <span className="font-semibold">{selectedTask?.title}</span>{" "}
-              không? <br />
-              {incompleteDetailsCount > 0 && (
-                <span className="text-red-600 font-bold">
-                  Chúng ta còn {incompleteDetailsCount} chi tiết công việc chưa
-                  hoàn thành!
-                </span>
-              )}
-              
-              
-            </p>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={closeDeleteModal}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleDeleteTask}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              >
-                Xóa
-              </button>
-            </div>
-          </div>
+    <div className="p-8 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-6 text-gray-800 bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 py-2">
+          Danh sách công việc
+        </h1>
+        
+        <div className="flex justify-center items-center mb-8">  
+          <AddModal
+            onSubmit={handleAddTask}
+            newTask={newTask}
+            setNewTask={setNewTask}
+            setAttachments={setAttachments}
+          />
         </div>
-      )}
 
-      <div className="flex flex-wrap gap-6 justify-center">
-        {tasks.map((task: TaskType) => (
-          <div
-            key={task.id}
-            className="bg-white rounded-xl shadow-lg p-4 w-full sm:w-[45%] md:w-[30%]"
-          >
-            <div className="mb-4 p-2 bg-gray-50 rounded-md">
-              <h3 className="text-lg font-medium flex justify-between items-center">
-                <span className="text-black-700 text-sm font-semibold">
-                  {task.title}
-                </span>
-                <Badge variant="outline" className="bg-blue-100 text-blue-800">
-                  {task.code}
-                </Badge>
-              </h3>
-              <p className="text-sm text-gray-600">
-                Mô tả:{" "}
-                <span className="text-black-700 text-sm font-semibold">
-                  {task.description}
-                </span>
-              </p>
-              <p className="text-sm text-gray-600">
-                Trạng thái:{" "}
-                <span className="text-black-700 text-sm font-semibold">
-                  {task.status}
-                </span>
-              </p>
-              <p className="text-sm text-gray-600">
-                Thời hạn:{" "}
-                <span className="text-black-700 text-sm font-semibold">
-                  {formatDate(task.deadline?.toString() || "")}
-                </span>
-              </p>
-            </div>
-            <div className="flex justify-end space-x-2 mt-2">
-              <Link
-                to={`/task_detail/${task.id}`}
-                className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-              >
-                Xem chi tiết
-              </Link>
+        {editingTask && (
+          <EditTask
+            onSubmit={handleUpdateTask}
+            editingTask={editingTask}
+            setEditingTask={setEditingTask}
+          />
+        )}
 
-              <button
-                onClick={() => setEditingTask(task)} // Mở modal chỉnh sửa
-                className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
-              >
-                Sửa
-              </button>
-              <button
-                onClick={() => openDeleteModal(task)} // Mở modal xác nhận xóa
-                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-              >
-                Xóa
-              </button>
+        {/* Modal xác nhận xóa */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-all duration-300">
+            <div className="bg-white rounded-xl shadow-2xl p-6 w-[450px] border border-gray-200 transform transition-all duration-300 scale-100">
+              <h2 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">Xác nhận xóa</h2>
+              <div className="py-4">
+                <p className="text-gray-700 mb-4">
+                  Bạn có chắc chắn muốn xóa task{" "}
+                  <span className="font-semibold text-blue-600">{selectedTask?.title}</span>{" "}
+                  không?
+                </p>
+                {incompleteDetailsCount > 0 && (
+                  <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded">
+                    <div className="flex items-center">
+                      <svg className="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <span className="text-red-600 font-medium">
+                        Chúng ta còn {incompleteDetailsCount} chi tiết công việc chưa hoàn thành!
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-end space-x-3 mt-2">
+                <button
+                  onClick={closeDeleteModal}
+                  className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleDeleteTask}
+                  className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                >
+                  Xóa
+                </button>
+              </div>
             </div>
           </div>
-        ))}
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-2">
+          {tasks.map((task: TaskType) => (
+            <div
+              key={task.id}
+              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full"
+            >
+              <div className="p-5 flex-grow">
+                <div className="flex justify-between items-start mb-3">
+                  <Badge variant="outline" className="bg-blue-100 text-blue-800 font-medium">
+                    {task.code}
+                  </Badge>
+                  <div className="flex items-center">
+                    <span className={`inline-block w-2 h-2 rounded-full mr-2 ${task.status === 'Hoàn thành' ? 'bg-green-500' : task.status === 'Đang thực hiện' ? 'bg-yellow-500' : 'bg-blue-500'}`}></span>
+                    <span className="text-xs font-medium text-gray-600">{task.status}</span>
+                  </div>
+                </div>
+                
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 line-clamp-2">
+                  {task.title}
+                </h3>
+                
+                <div className="space-y-2 mb-4">
+                  <p className="text-sm text-gray-600 line-clamp-2">
+                    <span className="font-medium">Mô tả:</span> {task.description}
+                  </p>
+                  
+                  <p className="text-sm text-gray-600 flex items-center">
+                    <svg className="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="font-medium">Thời hạn :   </span> {formatDate(task.deadline?.toString() || "")}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 p-4 border-t border-gray-100">
+                <div className="flex justify-end space-x-2">
+                  <Link
+                    to={`/task_detail/${task.id}`}
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  >
+                    <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    Xem chi tiết
+                  </Link>
+
+                  <button
+                    onClick={() => setEditingTask(task)}
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  >
+                    <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Sửa
+                  </button>
+                  <button
+                    onClick={() => openDeleteModal(task)}
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  >
+                    <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Xóa
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

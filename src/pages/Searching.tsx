@@ -42,43 +42,54 @@ export default function Searching() {
       </div>
 
       {filteredTasks.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTasks.map((task) => (
-            <div key={task.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200">
-              <div className="p-5">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base text-gray-800 truncate">{task.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1">#{task.code}</p>
-                  </div>
-                  <Badge 
-                    variant="outline" 
-                    className={`text-sm px-3 py-1 ${
-                      task.status === 'Hoàn thành' ? 'bg-green-100 text-green-800' :
-                      task.status === 'Đang thực hiện' ? 'bg-blue-400 text-white' :
-                      'bg-yellow-300 text-gray-800'
-                    }`}
-                  >
-                    {task.status}
+            <div
+              key={task.id}
+              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full"
+            >
+              <div className="p-5 flex-grow">
+                <div className="flex justify-between items-start mb-3">
+                  <Badge variant="outline" className="bg-blue-100 text-blue-800 font-medium">
+                    {task.code}
                   </Badge>
+                  <div className="flex items-center">
+                    <span className={`inline-block w-2 h-2 rounded-full mr-2 ${task.status === 'Hoàn thành' ? 'bg-green-500' : task.status === 'Đang thực hiện' ? 'bg-yellow-500' : 'bg-blue-500'}`}></span>
+                    <span className="text-xs font-medium text-gray-600">{task.status}</span>
+                  </div>
                 </div>
                 
-                {task.description && (
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">{task.description}</p>
-                )}
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 line-clamp-2">
+                  {task.title}
+                </h3>
                 
-                {task.deadline && (
-                  <div className="flex items-center text-sm text-gray-600 mb-4">
-                    <span className="mr-1">⏰</span>
-                    <span>{formatDate(task.deadline)}</span>
-                  </div>
-                )}
-                
+                <div className="space-y-2 mb-4">
+                  {task.description && (
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      <span className="font-medium">Mô tả:</span> {task.description}
+                    </p>
+                  )}
+                  
+                  {task.deadline && (
+                    <p className="text-sm text-gray-600 flex items-center">
+                      <svg className="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="font-medium">Thời hạn:</span> {formatDate(task.deadline)}
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 p-4 border-t border-gray-100">
                 <div className="flex justify-end">
                   <button 
-                    className="text-sm bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-full transition-colors"
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
                     onClick={() => console.log('Join project:', task.id)}
                   >
+                    <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
                     Tham gia
                   </button>
                 </div>

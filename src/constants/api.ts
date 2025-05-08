@@ -36,4 +36,5 @@ export const TASK_DETAIL_ENDPOINTS = {
   UPDATE_STATUS: (id: number | string, status: string) =>
     `/task_detail/${id}/status/${status}/`,
   GET_ASSIGNEESS_BY_TASKDETAIL_ID: (id: number | string) =>`task_detail/${id}/assignees`,
+  GET_ALL_TASK_DETAIL_BY_USER_ID: (id: number | string) =>`task_detail/user/${id}`,
 };
