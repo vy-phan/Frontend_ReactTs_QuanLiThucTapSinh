@@ -2,9 +2,13 @@ import { useState, useEffect } from "react";
 import apiClient from "../lib/apiClient";  // Đảm bảo apiClient đã được import
 import { TASK_DETAIL_ENDPOINTS } from "../constants/api";
 import { TaskDetail } from "@/@type/type"; // Import kiểu TaskDetail
+import { useAuth } from "../context/authContext"; // Import AuthContext để lấy thông tin người dùng
 import { toast } from "sonner"
+import Task from "@/pages/Task";
 
 export const useTaskDetail = (taskId: string | undefined) => {
+  const { user } = useAuth(); // Lấy thông tin người dùng hiện tại
+  console.log("Userádasdasd:", user?.id); // Kiểm tra thông tin người dùng
   const [tabs, setTabs] = useState<Record<string, TaskDetail[]>>({
     "Đã giao": [],
     "Đang thực hiện": [],
@@ -14,26 +18,59 @@ export const useTaskDetail = (taskId: string | undefined) => {
   // Hàm lấy chi tiết task
   const fetchTaskDetail = async () => {
     try {
-      const response = await apiClient.get<{ success: boolean; data: TaskDetail[] }>(TASK_DETAIL_ENDPOINTS.GET_BY_TASK_ID(taskId || ""));
+      const response = await apiClient.get<{ success: boolean; data: TaskDetail[] }>(
+        TASK_DETAIL_ENDPOINTS.GET_BY_TASK_ID(taskId || "")
+      );
       const taskList = response.data.data;
-      const grouped: Record<string, TaskDetail[]> = {
-        "Đã giao": [],
-        "Đang thực hiện": [],
-        "Hoàn thành": [],
-      };
 
-      taskList.forEach((task: TaskDetail) => {
-        const status = task.status || "Đã giao";
-        if (!grouped[status]) grouped[status] = [];
-        grouped[status].push(task);
-      });
+      // Đợi tất cả các lời gọi API lấy danh sách assignees hoàn tất
+      const tasksWithAssignees = await Promise.all(
+        taskList.map(async (task) => {
+          const assigneesResponse = await apiClient.get<{
+            success: boolean;
+            data: { id: number; username: string }[];
+          }>(`/task_detail/${task.id}/assignees`);
+          console.log(`Assignees cho task ${task.id}:`, assigneesResponse.data.data);
+          return { ...task, assignees: assigneesResponse.data.data || [] };
+        })
+      );
 
-      setTabs(grouped);
+      // Sau khi tất cả các lời gọi API hoàn tất, kiểm tra vai trò của người dùng
+      if (user?.role !== "MANAGER") {
+        // Nếu không phải MANAGER, chỉ hiển thị các task_detail mà user được giao
+        const filteredTasks = tasksWithAssignees.filter((task) =>
+          Array.isArray(task.assignees) &&
+          task.assignees.some((assignee) => Number(assignee.id) === Number(user?.id))
+        );
+
+        setTabs({
+          "Đã giao": filteredTasks.filter((task) => task.status === "Đã giao"),
+          "Đang thực hiện": filteredTasks.filter((task) => task.status === "Đang thực hiện"),
+          "Hoàn thành": filteredTasks.filter((task) => task.status === "Hoàn thành"),
+        });
+      } else {
+        // Nếu là MANAGER, hiển thị tất cả các task_detail
+        const grouped: Record<string, TaskDetail[]> = {
+          "Đã giao": [],
+          "Đang thực hiện": [],
+          "Hoàn thành": [],
+        };
+        tasksWithAssignees.forEach((task: TaskDetail) => {
+          grouped[task.status].push(task);
+        });
+        setTabs(grouped);
+      }
     } catch (err) {
-      console.error("Lỗi khi load task detail:", err);
+      console.error("Lỗi khi lấy chi tiết task:", err);
     }
   };
 
+  // Gọi fetchTaskDetail khi taskId và user đã sẵn sàng
+  useEffect(() => {
+    if (taskId && user) {
+      fetchTaskDetail();
+    }
+  }, [taskId, user]);
 
 
 
