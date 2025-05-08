@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   ChevronLeft,
@@ -6,42 +6,72 @@ import {
 } from "lucide-react";
 import GradientText from "@/components/ui/GradientText";
 import Dashboard from "@/components/common/Dashboard";
+import { useAuth } from "@/context/authContext";
+import { getTaskDetailsByUserId } from "@/hooks/taskDetailApi";
+import { useTask } from "@/hooks/taskApi";
 
-const CalendarUI = () => {
-  const [date, setDate] = useState<Date>(new Date(2025, 4, 1)); // May 2025
+const Home = () => {
+  const { user } = useAuth();
+  const [date, setDate] = useState<Date>(new Date(2025, 4, 1));
+  // trả về tất cả task detail có use id hiện  tại 
+  const [userTasksDetails, setUserTasksDetails] = useState<any[]>([]);
+  const { tasks, fetchTask } = useTask();
 
-  // Fake events data
-  const events = [
-    {
-      id: "1",
-      title: "Event Conf.",
-      date: new Date(2025, 4, 7),
-      type: "danger"
-    },
-    {
-      id: "2",
-      title: "Meeting",
-      date: new Date(2025, 4, 8),
-      type: "success"
-    },
-    {
-      id: "3",
-      title: "Workshop",
-      date: new Date(2025, 4, 9),
-      type: "primary"
+  // Memoized fetch function
+  const fetchTasks = useCallback(async () => {
+    try {
+      await fetchTask();
+
+      if (user?.id) {
+        const userTasksDetails = await getTaskDetailsByUserId(user.id);
+        
+        // Merge deadline from tasks into userTasksDetails
+        const mergedTasks = userTasksDetails.map(taskDetail => {
+          const matchingTask = tasks.find(task => task.id === taskDetail.task_id);
+          return {
+            ...taskDetail,
+            deadline: matchingTask?.deadline || null
+          };
+        });
+        
+        setUserTasksDetails(mergedTasks);
+      }
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
     }
-  ];
+  }, [user?.id, fetchTask, tasks]);
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
+
+
+
+  // Convert tasks to calendar events
+  const events = userTasksDetails.map(task => ({
+    id: task.id.toString(),
+    title: task.title || task.description.substring(0, 15) + '...',
+    startDate: new Date(task.created_at),
+    endDate: new Date(task.deadline),
+    type: task.status === 'Hoàn thành' ? 'success' :
+      task.status === 'Đang thực hiện' ? 'primary' : 'warning'
+  }));
+
+
+
 
   // Helper to format date as YYYY-MM-DD
   const formatDate = (date: Date): string => {
     return date.toISOString().split('T')[0];
   };
 
-  // Get events for a specific date
+  // Get events for a specific date (updated to check date ranges)
   const getEventsForDate = (date: Date): any[] => {
-    return events.filter(event =>
-      formatDate(event.date) === formatDate(date)
-    );
+    return events.filter(event => {
+      const formattedDate = formatDate(date);
+      const formattedStart = formatDate(event.startDate);
+      const formattedEnd = formatDate(event.endDate);
+      return formattedDate >= formattedStart && formattedDate <= formattedEnd;
+    });
   };
 
   // Generate days for the calendar grid
@@ -98,48 +128,61 @@ const CalendarUI = () => {
   // Updated renderEvents function
   const renderEvents = (day: Date) => {
     const dayEvents = getEventsForDate(day);
-
-    return dayEvents.map(event => (
-      <div
-        key={event.id}
-        className={`text-xs py-1 px-2 my-1 rounded-md flex items-center transition-all duration-200 hover:translate-x-1 ${
-          event.type === 'danger' 
-            ? 'bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 shadow-sm hover:shadow-red-200' 
-            : event.type === 'success' 
-              ? 'bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500 shadow-sm hover:shadow-green-200'
-              : 'bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-500 shadow-sm hover:shadow-blue-200'
-        }`}
-      >
-        <span
-          className={`mr-2 inline-block w-2 h-2 rounded-full ${
-            event.type === 'danger' ? 'bg-red-500' :
-            event.type === 'success' ? 'bg-green-500' :
-            'bg-blue-500'
+    const formattedDay = formatDate(day);
+    const isNewMonth = day.getDate() === 1; // Check if it's the first day of month
+  
+    return dayEvents.map(event => {
+      const isStartDate = formattedDay === formatDate(event.startDate);
+      const isEndDate = formattedDay === formatDate(event.endDate);
+      const isMiddleDay = !isStartDate && !isEndDate;
+      const showTitle = !isMiddleDay || isNewMonth; // Show title for new month
+  
+      return (
+        <div
+          key={event.id}
+          className={`text-xs py-1 px-2 my-1 rounded-md flex items-center transition-all duration-200 hover:translate-x-1 min-h-[28px] ${
+            isMiddleDay
+              ? event.type === 'warning'
+                ? 'bg-yellow-100 shadow-sm hover:shadow-yellow-200' 
+                : event.type === 'success'
+                ? 'bg-green-100 shadow-sm hover:shadow-green-200'
+                : 'bg-blue-100 shadow-sm hover:shadow-blue-200'
+            : event.type === 'warning'
+              ? 'bg-yellow-100 border-l-4 border-yellow-500 shadow-sm hover:shadow-yellow-200'
+              : event.type === 'success'
+                ? 'bg-green-100 border-l-4 border-green-500 shadow-sm hover:shadow-green-200'
+                : 'bg-blue-100 border-l-4 border-blue-500 shadow-sm hover:shadow-blue-200'
           }`}
-        ></span>
-        <span className="font-medium">{event.title}</span>
-      </div>
-    ));
+        >
+          {showTitle ? (
+            <span className="font-medium">{event.title}</span>
+          ) : (
+            <span className="opacity-0">Placeholder</span>
+          )}
+        </div>
+      );
+    });
   };
 
   return (
     <div className="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-      <Dashboard/>
+      {/* Pass userTasksDetails to Dashboard */}
+      <Dashboard userTasks={userTasksDetails} />
 
-      {/* Header with navigation - updated */}
+      {/* Giao diện cuốn lích */}
       <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
         <div className="flex items-center space-x-2">
-          <Button 
-            variant="outline" 
-            size="icon" 
+          <Button
+            variant="outline"
+            size="icon"
             className="h-9 w-9 rounded-full hover:bg-gray-100 transition-colors"
             onClick={goToPrevMonth}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="outline" 
-            size="icon" 
+          <Button
+            variant="outline"
+            size="icon"
             className="h-9 w-9 rounded-full hover:bg-gray-100 transition-colors"
             onClick={goToNextMonth}
           >
@@ -151,12 +194,12 @@ const CalendarUI = () => {
           {getVietnameseMonth(date.getMonth())} <span className="text-blue-600">{date.getFullYear()}</span>
         </div>
 
-        <div className="flex rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 p-2 shadow-inner">
+        <div className="flex rounded-lg bg-gray-800 p-2 shadow-inner">
           <GradientText
             colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
             animationSpeed={7}
             showBorder={false}
-            className="text-sm font-bold"
+            className="text-md font-bold"
           >
             Tháng
           </GradientText>
@@ -211,4 +254,4 @@ const CalendarUI = () => {
   );
 };
 
-export default CalendarUI;
+export default Home;

@@ -4,11 +4,9 @@ import { TASK_DETAIL_ENDPOINTS } from "../constants/api";
 import { TaskDetail } from "@/@type/type"; // Import kiểu TaskDetail
 import { useAuth } from "../context/authContext"; // Import AuthContext để lấy thông tin người dùng
 import { toast } from "sonner"
-import Task from "@/pages/Task";
 
 export const useTaskDetail = (taskId: string | undefined) => {
-  const { user } = useAuth(); // Lấy thông tin người dùng hiện tại
-  console.log("Userádasdasd:", user?.id); // Kiểm tra thông tin người dùng
+  const { user } = useAuth(); 
   const [tabs, setTabs] = useState<Record<string, TaskDetail[]>>({
     "Đã giao": [],
     "Đang thực hiện": [],
@@ -112,8 +110,6 @@ export const addTaskDetail = async (taskId: string, newTask: any) => {
     // Loại bỏ giá trị rỗng
   };
 
-  console.log("Payload gửi lên server:", payload);
-
   try {
     const response = await apiClient.post<{ success: boolean; message: string }>(
       TASK_DETAIL_ENDPOINTS.CREATE,
@@ -123,7 +119,6 @@ export const addTaskDetail = async (taskId: string, newTask: any) => {
     if (!response.data.success) {
       throw new Error(response.data.message || "Thêm task detail thất bại");
     }
-    console.log("Thêm task detail thành công:", response.data.message);
     toast.success(`Thêm task detail thành công! ${response.data.message}`);
     return response.data;
   } catch (err) {
@@ -150,7 +145,6 @@ export const updateTaskDetail = async (taskId: string, updatedTask: any) => {
     if (!response.data.success) {
       throw new Error(response.data.message || "Cập nhật task detail thất bại");
     }
-    console.log("Cập nhật task detail thành công:", response.data.message);
     toast.success(`Cập nhật task detail thành công! ${response.data.message}`);
     return response.data;
   } catch (err) {
@@ -182,6 +176,26 @@ export const getAssigneesByTaskDetailId = async (taskDetailId: string) => {
     return response.data.data;
   } catch (err) {
     console.error("Lỗi khi lấy danh sách assignees:", err);
+    throw err;
+  }
+};
+
+export const getTaskDetailsByUserId = async (userId: string | number) => {
+  try {
+    const response = await apiClient.get<{ 
+      success: boolean; 
+      data: TaskDetail[] 
+    }>(
+      TASK_DETAIL_ENDPOINTS.GET_ALL_TASK_DETAIL_BY_USER_ID(userId)
+    );
+    
+    if (!response.data.success) {
+      throw new Error("Failed to fetch task details by user ID");
+    }
+    
+    return response.data.data;
+  } catch (err) {
+    console.error("Error fetching task details by user ID:", err);
     throw err;
   }
 };

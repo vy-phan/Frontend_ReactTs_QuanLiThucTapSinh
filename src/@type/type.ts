@@ -43,6 +43,7 @@ export interface Task {
   created_by: number;
   created_at: string | null; // ISO format or null
   attachments: Attachment[] | null; // Danh sách tệp đính kèm
+  // assignees?: User[] | null; // Danh sách người được phân công
 }
 
 
@@ -56,6 +57,7 @@ export interface TaskDetail {
   createdAt: string;
   updatedAt: string;
   assignees: { id: number; username: string }[]; // Thêm danh sách người làm
+  task_id?: number  | string; 
 }
 
 export interface AuthContextType {
@@ -90,6 +92,8 @@ export const roleConfig = {
     className: 'bg-green-500 text-white'
   }
 };
+
+
 
 //=============================================================================
 //

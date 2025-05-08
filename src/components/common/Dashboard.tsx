@@ -11,17 +11,31 @@ import {
 import { useEffect, useState } from 'react';
 import { getAllUsers } from '@/hooks/userApi';
 
-const Dashboard = () => {
+interface DashboardProps {
+  userTasks: any[];
+}
+
+const Dashboard = ({ userTasks }: DashboardProps) => {
     const [stats, setStats] = useState({
         totalUsers: 0,
         userGrowth: 0,
-        inProgressTasks: 156,
+        inProgressTasks: userTasks.filter(task => task.status === 'Đang thực hiện').length,
         inProgressTasksChange: -3.2,
-        completedTasks: 893,
+        completedTasks: userTasks.filter(task => task.status === 'Hoàn thành').length,
         completedTasksChange: 8.7,
-        pendingTasks: 59,
+        pendingTasks: userTasks.filter(task => task.status === 'Đã giao').length,
         pendingTasksChange: 2.3,
     });
+
+    // Update stats when userTasks changes
+    useEffect(() => {
+      setStats(prev => ({
+        ...prev,
+        inProgressTasks: userTasks.filter(task => task.status === 'Đang thực hiện').length,
+        completedTasks: userTasks.filter(task => task.status === 'Hoàn thành').length,
+        pendingTasks: userTasks.filter(task => task.status === 'Đã giao').length
+      }));
+    }, [userTasks]);
 
     useEffect(() => {
         const fetchUserCount = async () => {

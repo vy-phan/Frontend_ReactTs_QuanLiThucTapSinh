@@ -10,8 +10,10 @@ import { useTaskDetail, addTaskDetail, delete_taskDetail, updateTaskDetail } fro
 import { useTask } from "../hooks/taskApi";
 import { TaskDetail as TaskDetailType } from "@/@type/type";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const TaskDetail = () => {
+  const navigate = useNavigate();
   const { taskId } = useParams<{ taskId: string }>();
   const { tasks, fetchTask } = useTask(taskId);
   const task = Array.isArray(tasks) ? tasks[0] : tasks as any; // fallback nếu tasks là object
@@ -86,25 +88,45 @@ const TaskDetail = () => {
   };
 
   return (
-    <div className="p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold text-center mb-4 text-gray-700">Chi tiết công việc</h1>
-
+    <div className="p-8 bg-gradient-to-b from-blue-50 to-gray-100 min-h-screen">
+      <div className="flex justify-between items-center mb-6">
+        <button 
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+          Quay lại
+        </button>
+        <h1 className="text-3xl font-bold text-blue-800 drop-shadow-sm">Chi tiết công việc</h1>
+        <div className="w-20"></div> {/* This is a spacer to balance the layout */}
+      </div>
       {/* Thông tin chung của Task chính */}
       {task ? (
-        <div className="mb-8 bg-white shadow rounded-lg p-4 max-w-3xl mx-auto">
-          <h2 className="text-xl font-semibold text-blue-700 mb-2">{task.title}</h2>
-          <p className="text-gray-600">{task.description}</p>
-          {task.deadline
-            ? new Date(task.deadline).toLocaleString()
-            : "Không có"}
+        <div className="mb-8 bg-white shadow-lg rounded-xl p-6 max-w-3xl mx-auto border border-blue-100 hover:shadow-xl transition-all duration-300">
+          <h2 className="text-xl font-semibold text-blue-700 mb-3 flex items-center gap-2">
+            <span className="bg-blue-100 p-1 rounded-full w-8 h-8 flex items-center justify-center text-blue-700 text-sm">#</span>
+            {task.title}
+          </h2>
+          <p className="text-gray-600 mb-3 pl-2 border-l-2 border-blue-200">{task.description}</p>
+          <div className="flex items-center text-sm text-gray-500 mt-4">
+          Thời gian hết hạn :
+            <span className="bg-blue-50 px-3 py-1 rounded-full text-blue-700 font-medium">
+               {task.deadline ? new Date(task.deadline).toLocaleString() : "Không có thời hạn"}
+            </span>
+          </div>
         </div>
       ) : (
-        <p className="text-center text-red-500 mb-4">Không tìm thấy thông tin task.</p>
+        <p className="text-center text-red-500 mb-6 bg-red-50 py-3 rounded-lg max-w-md mx-auto border border-red-100">Không tìm thấy thông tin task.</p>
       )}
 
-      <div className="text-center mb-6">
-        <button onClick={() => setIsModalOpen(true)} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-          + Thêm Task Detail
+      <div className="text-center mb-8">
+        <button 
+          onClick={() => setIsModalOpen(true)} 
+          className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2 mx-auto"
+        >
+          Thêm Task Detail
         </button>
       </div>
 
@@ -125,36 +147,59 @@ const TaskDetail = () => {
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <div className="flex flex-wrap gap-6 justify-center">
-          {Object.keys(tabs).map((tab) => (
-            <div key={tab} className="bg-white rounded-xl shadow-lg p-4 w-full sm:w-[45%] md:w-[30%]">
-              <h2 className="text-xl font-semibold text-center text-blue-600 mb-4">{tab}</h2>
-              <DroppableContainer id={tab}>
-                <SortableContext items={tabs[tab].map((t) => t.id.toString())} strategy={verticalListSortingStrategy}>
-                  {tabs[tab].map((task: TaskDetailType) => (
-                    <div key={task.id} className="relative">
-                      <SortableItem task={task} />
-                  
-                      <button
-                        onClick={() => handleDeleteTaskDetail(task.id.toString())}
-                        className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                      >
-                        Xóa
-                      </button>
-                      <button
-                        onClick={() => {
-                          setTaskToEdit(task);
-                          setIsEditModalOpen(true);
-                        }}
-                        className="absolute top-2 right-12 bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
-                      >
-                        Sửa
-                      </button>
-                    </div>
-                  ))}
-                </SortableContext>
-              </DroppableContainer>
-            </div>
-          ))}
+          {Object.keys(tabs).map((tab) => {
+            const statusColors = {
+              "Đã giao": "bg-amber-50 border-amber-200 text-amber-700",
+              "Đang thực hiện": "bg-blue-50 border-blue-200 text-blue-700",
+              "Hoàn thành": "bg-emerald-50 border-emerald-200 text-emerald-700"
+            };
+            
+            return (
+              <div 
+                key={tab} 
+                className={`bg-white rounded-xl shadow-lg p-5 w-full sm:w-[45%] md:w-[30%] border-t-4 ${statusColors[tab as keyof typeof statusColors] || "border-gray-200"} transition-all duration-300 hover:shadow-xl`}
+              >
+                <h2 className={`text-xl font-semibold text-center mb-5 py-2 rounded-lg ${statusColors[tab as keyof typeof statusColors] || "bg-gray-100 text-gray-700"}`}>
+                  {tab}
+                </h2>
+                <DroppableContainer id={tab}>
+                  <SortableContext items={tabs[tab].map((t) => t.id.toString())} strategy={verticalListSortingStrategy}>
+                    {tabs[tab].length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-40 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+                        <p>Kéo task vào đây</p>
+                      </div>
+                    ) : (
+                      tabs[tab].map((task: TaskDetailType) => (
+                        <div key={task.id} className="relative group mb-4">
+                          <SortableItem task={task} />
+                          
+                          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <button
+                              onClick={() => {
+                                setTaskToEdit(task);
+                                setIsEditModalOpen(true);
+                              }}
+                              className="bg-amber-500 text-white p-1.5 rounded-md hover:bg-amber-600 transition-colors"
+                              title="Sửa"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTaskDetail(task.id.toString())}
+                              className="bg-red-500 text-white p-1.5 rounded-md hover:bg-red-600 transition-colors"
+                              title="Xóa"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </SortableContext>
+                </DroppableContainer>
+              </div>
+            );
+          })}
         </div>
       </DndContext>
     </div>
