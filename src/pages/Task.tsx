@@ -108,27 +108,26 @@ export const Task = () => {
     }
   };
 
-  const handleAddTask = async () => {
-    try {
-      await addTask(newTask);
-      toast.success("Thêm task thành công");
-      fetchTask();
-      setNewTask({
-        id: 0,
-        code: "",
-        title: "",
-        description: "",
-        deadline: "",
-        status: "Đã giao",
-        created_by: user?.id || 0,
-        created_at: "",
-        attachments: [],
-      });
-      setAttachments([]);
-    } catch (err) {
-      console.error("Lỗi thêm task:", err);
-      toast.error("Thêm task thất bại");
+
+  // Nhóm các task theo trạng thái
+  const groupedTasks = tasks.reduce((acc: Record<string, TaskType[]>, task: TaskType) => {
+    const status = task.status || "Đã giao";
+    if (!acc[status]) {
+      acc[status] = [];
     }
+    acc[status].push(task);
+    return acc;
+  }, {
+    "Đã giao": [],
+    "Đang thực hiện": [],
+    "Đã hoàn thành": []
+  });
+
+  // Màu sắc cho từng trạng thái
+  const statusColors = {
+    "Đã giao": "bg-amber-50 border-amber-200 text-amber-700",
+    "Đang thực hiện": "bg-blue-50 border-blue-200 text-blue-700",
+    "Đã hoàn thành": "bg-emerald-50 border-emerald-200 text-emerald-700"
   };
 
   return (
@@ -137,8 +136,8 @@ export const Task = () => {
         <h1 className="text-3xl font-bold text-center mb-6 text-gray-800 bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 py-2">
           Danh sách công việc
         </h1>
-        
-        <div className="flex justify-center items-center mb-8">  
+
+        <div className="flex justify-center items-center mb-8">
           <AddModal
             onSubmit={addTask}
             newTask={newTask}
@@ -197,74 +196,95 @@ export const Task = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-2">
-          {tasks.map((task: TaskType) => (
+        {/* Hiển thị task theo cột trạng thái */}
+        <div className="flex flex-wrap gap-6 justify-center">
+          {Object.keys(groupedTasks).map((status) => (
             <div
-              key={task.id}
-              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full"
+              key={status}
+              className={`bg-white rounded-xl shadow-lg p-5 w-full sm:w-[45%] md:w-[30%] border-t-4 ${statusColors[status as keyof typeof statusColors] || "border-gray-200"} transition-all duration-300 hover:shadow-xl`}
             >
-              <div className="p-5 flex-grow">
-                <div className="flex justify-between items-start mb-3">
-                  <Badge variant="outline" className="bg-blue-100 text-blue-800 font-medium">
-                    {task.code}
-                  </Badge>
-                  <div className="flex items-center">
-                    <span className={`inline-block w-2 h-2 rounded-full mr-2 ${task.status === 'Hoàn thành' ? 'bg-green-500' : task.status === 'Đang thực hiện' ? 'bg-yellow-500' : 'bg-blue-500'}`}></span>
-                    <span className="text-xs font-medium text-gray-600">{task.status}</span>
-                  </div>
-                </div>
-                
-                <h3 className="text-lg font-semibold text-gray-800 mb-3 line-clamp-2">
-                  {task.title}
-                </h3>
-                
-                <div className="space-y-2 mb-4">
-                  <p className="text-sm text-gray-600 line-clamp-2">
-                    <span className="font-medium">Mô tả:</span> {task.description}
-                  </p>
-                  
-                  <p className="text-sm text-gray-600 flex items-center">
-                    <svg className="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span className="font-medium">Thời hạn :   </span> {formatDate(task.deadline?.toString() || "")}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="bg-gray-50 p-4 border-t border-gray-100">
-                <div className="flex justify-end space-x-2">
-                  <Link
-                    to={`/task_detail/${task.id}`}
-                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                  >
-                    <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    Xem chi tiết
-                  </Link>
+              <h2 className={`text-xl font-semibold text-center mb-5 py-2 rounded-lg ${statusColors[status as keyof typeof statusColors] || "bg-gray-100 text-gray-700"}`}>
+                {status}
+              </h2>
 
-                  <button
-                    onClick={() => setEditingTask(task)}
-                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
-                  >
-                    <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Sửa
-                  </button>
-                  <button
-                    onClick={() => openDeleteModal(task)}
-                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
-                  >
-                    <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Xóa
-                  </button>
+              {groupedTasks[status].length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-40 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+                  <p>Không có công việc</p>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-4">
+                  {groupedTasks[status].map((task: TaskType) => (
+                    <div
+                      key={task.id}
+                      className="bg-white rounded-lg shadow-sm hover:shadow transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full relative group"
+                    >
+                      <div className="p-4 flex-grow">
+                        <div className="flex justify-between items-start mb-2">
+                          <Badge variant="outline" className="bg-blue-100 text-blue-800 font-medium">
+                            {task.code}
+                          </Badge>
+                        </div>
+
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
+                          {task.title}
+                        </h3>
+
+                        <div className="space-y-2 mb-3">
+                          <p className="text-sm text-gray-600 line-clamp-2">
+                            <span className="font-medium">Mô tả:</span> {task.description}
+                          </p>
+
+                          <p className="text-sm text-gray-600 flex items-center">
+                            <svg className="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span className="font-medium">Thời hạn:</span> {formatDate(task.deadline?.toString() || "")}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-50 p-3 border-t border-gray-100">
+                        <div className="flex justify-start space-x-2">
+                          <Link
+                            to={`/task_detail/${task.id}`}
+                            className="inline-flex items-center px-3 py-1.5 rounded-lg bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                          >
+                            <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Chi tiết
+                          </Link>
+
+                          {task.created_by === user?.id && user?.role === 'MANAGER' && (
+                            <>
+                              <button
+                                onClick={() => setEditingTask(task)}
+                                className="inline-flex items-center px-3 py-1.5 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                              >
+                                <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Sửa
+                              </button>
+                              <button
+                                onClick={() => openDeleteModal(task)}
+                                className="inline-flex items-center px-3 py-1.5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                              >
+                                <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Xóa
+                              </button>
+                            </>
+                          )}
+
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>

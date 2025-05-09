@@ -11,20 +11,19 @@ import { useTask } from "../hooks/taskApi";
 import { TaskDetail as TaskDetailType } from "@/@type/type";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { TASK_ENDPOINTS } from "../constants/api";
+import { useAuth } from "@/context/authContext";
 
 const TaskDetail = () => {
   const navigate = useNavigate();
   const { taskId } = useParams<{ taskId: string }>();
   const { tasks, fetchTask } = useTask(taskId);
   const task = Array.isArray(tasks) ? tasks[0] : tasks as any; // fallback nếu tasks là object
-
+  const { user } = useAuth()
   const { tabs, setTabs, fetchTaskDetail, updateTaskStatus } = useTaskDetail(taskId);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({ title: "", description: "", status: "Đã giao", assignees: "" });
   const [taskToEdit, setTaskToEdit] = useState<any>(null);
-
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
 
@@ -104,32 +103,9 @@ const TaskDetail = () => {
         <div className="w-20"></div> {/* This is a spacer to balance the layout */}
       </div>
       {/* Thông tin chung của Task chính */}
-      {task && (
-        <>
-          {task.attachments && task.attachments.length > 0 ? (
-            <div className="mt-4">
-              <h3 className="text-lg font-bold">Tệp tin đính kèm:</h3>
-              <div className="flex flex-wrap gap-2">
-                {task.attachments.map((attachment: any) => (
-                  <a
-                    key={attachment.id}
-                    href={attachment.file_path}
-                    className="text-blue-600 underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {attachment.file_path.split('/').pop()}
-                  </a>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p className="text-center text-xl font-bold text-black-300 drop-shadow-lg">Không có file đính kèm</p>
-          )}
-        </>
-      )}
 
-{task ? (
+      {/* thông tin của mỗi task  */}
+      {task ? (
         <div className="mb-8 bg-white shadow-lg rounded-xl p-6 max-w-3xl mx-auto border border-blue-100 hover:shadow-xl transition-all duration-300">
           <h2 className="text-xl font-semibold text-blue-700 mb-3 flex items-center gap-2">
             <span className="bg-blue-100 p-1 rounded-full w-8 h-8 flex items-center justify-center text-blue-700 text-sm">#</span>
@@ -137,15 +113,63 @@ const TaskDetail = () => {
           </h2>
           <p className="text-gray-600 mb-3 pl-2 border-l-2 border-blue-200">{task.description}</p>
           <div className="flex items-center text-sm text-gray-500 mt-4">
-          Thời gian hết hạn :
+            Thời gian hết hạn :
             <span className="bg-blue-50 px-3 py-1 rounded-full text-blue-700 font-medium">
-               {task.deadline ? new Date(task.deadline).toLocaleString() : "Không có thời hạn"}
+              {task.deadline ? new Date(task.deadline).toLocaleString() : "Không có thời hạn"}
             </span>
           </div>
         </div>
       ) : (
         <p className="text-center text-red-500 mb-6 bg-red-50 py-3 rounded-lg max-w-md mx-auto border border-red-100">Không tìm thấy thông tin task.</p>
       )}
+
+      {/* thông tin của attachment */}
+      {task && (
+        <>
+          {task.attachments && task.attachments.length > 0 ? (
+            <div className="mb-8 bg-white shadow-lg rounded-xl p-6 max-w-3xl mx-auto border border-blue-100 hover:shadow-xl transition-all duration-300">
+              <h3 className="text-lg font-semibold text-gray-700 mb-4">Tệp tin đính kèm</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {task.attachments.map((attachment: any) => (
+                  <div
+                    key={attachment.id}
+                    className="flex items-center p-3 bg-gray-50 hover:bg-blue-50 rounded-md transition-colors duration-200 border border-gray-200"
+                  >
+                    <div className="mr-3 p-2 bg-blue-100 rounded-full">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                      </svg>
+                    </div>
+                    <a
+                      href={attachment.file_path}
+                      className="text-blue-600 hover:text-blue-800 font-medium truncate flex-1"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={attachment.file_path.split('/').pop()}
+                    >
+                      {attachment.file_path.split('/').pop()}
+                    </a>
+                    <span className="text-xs text-gray-500 ml-2">
+                      {attachment.file_path.split('.').pop()?.toUpperCase()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="mb-8 bg-white shadow-lg rounded-xl p-6 max-w-3xl mx-auto border border-blue-100 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-3">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              <p className="text-gray-500 font-medium">Không có file đính kèm</p>
+            </div>
+          )}
+        </>
+      )}
+
+
 
       <div className="text-center mb-8">
         <button
@@ -199,25 +223,28 @@ const TaskDetail = () => {
                         <div key={task.id} className="relative group mb-4">
                           <SortableItem task={task} />
 
-                          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <button
-                              onClick={() => {
-                                setTaskToEdit(task);
-                                setIsEditModalOpen(true);
-                              }}
-                              className="bg-amber-500 text-white p-1.5 rounded-md hover:bg-amber-600 transition-colors"
-                              title="Sửa"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>
-                            </button>
-                            <button
-                              onClick={() => handleDeleteTaskDetail(task.id.toString())}
-                              className="bg-red-500 text-white p-1.5 rounded-md hover:bg-red-600 transition-colors"
-                              title="Xóa"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                            </button>
-                          </div>
+                          {/* {(task as any).created_by === user?.id && ( */}
+                            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                              <button
+                                onClick={() => {
+                                  setTaskToEdit(task);
+                                  setIsEditModalOpen(true);
+                                }}
+                                className="bg-amber-500 text-white p-1.5 rounded-md hover:bg-amber-600 transition-colors"
+                                title="Sửa"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTaskDetail(task.id.toString())}
+                                className="bg-red-500 text-white p-1.5 rounded-md hover:bg-red-600 transition-colors"
+                                title="Xóa"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+                              </button>
+                            </div>
+                          {/* ) */}
+                          {/* } */}
                         </div>
                       ))
                     )}

@@ -132,7 +132,7 @@ export const EditTask: React.FC<EditTaskProps> = ({
                   >
                     <option value="Đã giao">Đã giao</option>
                     <option value="Đang thực hiện">Đang thực hiện</option>
-                    <option value="Hoàn thành">Hoàn thành</option>
+                    <option value="Đã hoàn thành">Hoàn thành</option>
                   </select>
                 </div>
               </div>

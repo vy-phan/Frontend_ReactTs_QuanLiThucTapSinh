@@ -22,7 +22,7 @@ export const getUserById = async (id: number | string): Promise<User> => {
 
 // thuộc tính Omit có nghĩa  là lấy tất cả trường của User trừ id
 export const createUser = async (userData: Omit<User, 'id'>): Promise<User> => {
-    const response = await apiClient.post(USER_ENDPOINTS.CREATE, userData);
+    const response = await apiClient.post(USER_ENDPOINTS.CREATE, userData, { withCredentials: true });
     if (response.data.success && response.data.data) {
         return response.data.data;
     } else {

@@ -35,12 +35,12 @@ const Layout = ({ children }: LayoutProps) => {
         <Sidebar className="shadow-md transition-all duration-300 ease-in-out flex flex-col bg-[#0f1729] border-r border-[#1d283a]">
           <SidebarHeader className="p-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-black">
-                <img src='/src/assets/react.svg' />
+              <div className="flex h-9 w-9 items-center justify-center rounded-md ">
+                <img src='/src/assets/logoTbay.png' />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-semibold">Acme Inc</span>
-                <span className="text-xs text-sidebar-foreground/70">Enterprise</span>
+                <span className="text-sm font-semibold">Tbay</span>
+                <span className="text-xs text-sidebar-foreground/70">Nội bộ</span>
               </div>
             </div>
           </SidebarHeader>

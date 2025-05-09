@@ -22,7 +22,7 @@ export const TASK_ENDPOINTS = {
   CREATE: "/task/",
   UPDATE: (id: number | string) => `/task/${id}`,
   DELETE: (id: number | string) => `/task/${id}`,
-  DOWNLOAD_ATTACHMENT: (id: number | string) => `/task/attachment/${id}/`,
+  DOWNLOAD_ATTACHMENT: (id: number | string) => `/task/attachment/${id}`,
   COUNT_INCOMPLETE_DETAILS: (id: number | string) =>
     `/task/${id}/incomplete_details`, // Đếm số lượng chi tiết công việc chưa hoàn thành
 };
