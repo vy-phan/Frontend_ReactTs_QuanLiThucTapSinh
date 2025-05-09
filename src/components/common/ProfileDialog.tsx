@@ -73,7 +73,10 @@ export const ProfileDialog = ({ open, onOpenChange, user }: ProfileDialogProps) 
                     {/* Avatar Section */}
                     <div className="flex items-center gap-4">
                         <Avatar className="h-20 w-20">
-                            <AvatarImage src={isEditing && avatarFile ? URL.createObjectURL(avatarFile) : user?.avatar} />
+                            <AvatarImage 
+                                src={isEditing && avatarFile ? URL.createObjectURL(avatarFile) : user?.avatar || '/src/assets/avatar.png'}
+                                alt={user?.username}
+                            />
                             <AvatarFallback>
                                 {user?.username?.charAt(0).toUpperCase() || 'U'}
                             </AvatarFallback>

@@ -48,35 +48,25 @@ export const AddModal: React.FC<AddModalProps> = ({
 
   const handleSubmit = async () => {
     try {
-      if (localAttachments.length > 0) {
-        // Nếu có file đính kèm, sử dụng FormData
-        const formData = new FormData();
-        formData.append("code", newTask.code);
-        formData.append("title", newTask.title);
-        formData.append("description", newTask.description || "");
-        formData.append(
-          "deadline",
-          newTask.deadline ? new Date(newTask.deadline).toISOString() : ""
-        );
-        formData.append("status", newTask.status);
-        formData.append("created_by", newTask.created_by.toString()); // Thêm ID người tạo
+      // if (localAttachments.length > 0) {
+      const formData = new FormData();
+      formData.append("code", newTask.code);
+      formData.append("title", newTask.title);
+      formData.append("description", newTask.description || "");
+      formData.append(
+        "deadline",
+        newTask.deadline ? new Date(newTask.deadline).toISOString() : ""
+      );
+      formData.append("status", newTask.status);
+      formData.append("created_by", newTask.created_by.toString());
 
-        // Thêm file đính kèm vào FormData
-        localAttachments.forEach((file) =>
-          formData.append("attachments", file)
-        );
+      localAttachments.forEach((file) => formData.append("attachments", file));
 
-        console.log("FormData gửi lên:", Array.from(formData.entries())); // Log dữ liệu FormData
-        await onSubmit(formData); // Gửi FormData
-      } else {
-        // Nếu không có file đính kèm, gửi dữ liệu từ form
-        console.log("Dữ liệu từ form gửi lên:", newTask); // Log dữ liệu từ form
-        await onSubmit(newTask);
-      }
+      console.log("FormData gửi lên:", Array.from(formData.entries())); // Log dữ liệu FormData
+      await onSubmit(formData); // Gửi FormData qua props `onSubmit`
 
       setOpen(false);
 
-      // Reset form và file đính kèm
       setNewTask({
         id: 0,
         code: "",
@@ -114,7 +104,7 @@ export const AddModal: React.FC<AddModalProps> = ({
             Điền đầy đủ thông tin cho task mới. Nhấn Lưu khi hoàn thành.
           </DialogDescription>
         </div>
-        
+
         <form
           onSubmit={(e) => {
             e.preventDefault();

@@ -32,9 +32,8 @@ const Login = () => {
       // Thành công: context đã cập nhật state, backend set cookie
       navigate(from, { replace: true }); // Điều hướng
     } catch (error: any) {
-      console.error("Login page submit error:", error);
       // Lấy message lỗi từ API hoặc trả về thông báo chung
-      setLoginError(error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      setLoginError('Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu.');
     } finally {
       // setLoading(false); // Không cần nếu dùng isAuthLoading
     }
