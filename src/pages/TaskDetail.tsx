@@ -11,6 +11,7 @@ import { useTask } from "../hooks/taskApi";
 import { TaskDetail as TaskDetailType } from "@/@type/type";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { TASK_ENDPOINTS } from "../constants/api";
 
 const TaskDetail = () => {
   const navigate = useNavigate();
@@ -90,12 +91,12 @@ const TaskDetail = () => {
   return (
     <div className="p-8 bg-gradient-to-b from-blue-50 to-gray-100 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <button 
+        <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6"/>
+            <path d="M15 18l-6-6 6-6" />
           </svg>
           Quay lại
         </button>
@@ -103,7 +104,32 @@ const TaskDetail = () => {
         <div className="w-20"></div> {/* This is a spacer to balance the layout */}
       </div>
       {/* Thông tin chung của Task chính */}
-      {task ? (
+      {task && (
+        <>
+          {task.attachments && task.attachments.length > 0 ? (
+            <div className="mt-4">
+              <h3 className="text-lg font-bold">Tệp tin đính kèm:</h3>
+              <div className="flex flex-wrap gap-2">
+                {task.attachments.map((attachment: any) => (
+                  <a
+                    key={attachment.id}
+                    href={attachment.file_path}
+                    className="text-blue-600 underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {attachment.file_path.split('/').pop()}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="text-center text-xl font-bold text-black-300 drop-shadow-lg">Không có file đính kèm</p>
+          )}
+        </>
+      )}
+
+{task ? (
         <div className="mb-8 bg-white shadow-lg rounded-xl p-6 max-w-3xl mx-auto border border-blue-100 hover:shadow-xl transition-all duration-300">
           <h2 className="text-xl font-semibold text-blue-700 mb-3 flex items-center gap-2">
             <span className="bg-blue-100 p-1 rounded-full w-8 h-8 flex items-center justify-center text-blue-700 text-sm">#</span>
@@ -122,8 +148,8 @@ const TaskDetail = () => {
       )}
 
       <div className="text-center mb-8">
-        <button 
-          onClick={() => setIsModalOpen(true)} 
+        <button
+          onClick={() => setIsModalOpen(true)}
           className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2 mx-auto"
         >
           Thêm Task Detail
@@ -153,10 +179,10 @@ const TaskDetail = () => {
               "Đang thực hiện": "bg-blue-50 border-blue-200 text-blue-700",
               "Hoàn thành": "bg-emerald-50 border-emerald-200 text-emerald-700"
             };
-            
+
             return (
-              <div 
-                key={tab} 
+              <div
+                key={tab}
                 className={`bg-white rounded-xl shadow-lg p-5 w-full sm:w-[45%] md:w-[30%] border-t-4 ${statusColors[tab as keyof typeof statusColors] || "border-gray-200"} transition-all duration-300 hover:shadow-xl`}
               >
                 <h2 className={`text-xl font-semibold text-center mb-5 py-2 rounded-lg ${statusColors[tab as keyof typeof statusColors] || "bg-gray-100 text-gray-700"}`}>
@@ -172,7 +198,7 @@ const TaskDetail = () => {
                       tabs[tab].map((task: TaskDetailType) => (
                         <div key={task.id} className="relative group mb-4">
                           <SortableItem task={task} />
-                          
+
                           <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <button
                               onClick={() => {
@@ -182,14 +208,14 @@ const TaskDetail = () => {
                               className="bg-amber-500 text-white p-1.5 rounded-md hover:bg-amber-600 transition-colors"
                               title="Sửa"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>
                             </button>
                             <button
                               onClick={() => handleDeleteTaskDetail(task.id.toString())}
                               className="bg-red-500 text-white p-1.5 rounded-md hover:bg-red-600 transition-colors"
                               title="Xóa"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
                             </button>
                           </div>
                         </div>
