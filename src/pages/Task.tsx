@@ -140,7 +140,7 @@ export const Task = () => {
         
         <div className="flex justify-center items-center mb-8">  
           <AddModal
-            onSubmit={handleAddTask}
+            onSubmit={addTask}
             newTask={newTask}
             setNewTask={setNewTask}
             setAttachments={setAttachments}
