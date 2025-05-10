@@ -4,9 +4,10 @@ import { TASK_DETAIL_ENDPOINTS } from "../constants/api";
 import { TaskDetail } from "@/@type/type"; // Import kiểu TaskDetail
 import { useAuth } from "../context/authContext"; // Import AuthContext để lấy thông tin người dùng
 import { toast } from "sonner"
+import { formatDate } from "@/utils/dateUtils";
 
 export const useTaskDetail = (taskId: string | undefined) => {
-  const { user } = useAuth(); 
+  const { user } = useAuth();
   const [tabs, setTabs] = useState<Record<string, TaskDetail[]>>({
     "Đã giao": [],
     "Đang thực hiện": [],
@@ -16,10 +17,36 @@ export const useTaskDetail = (taskId: string | undefined) => {
   // Hàm lấy chi tiết task
   const fetchTaskDetail = async () => {
     try {
-      const response = await apiClient.get<{ success: boolean; data: TaskDetail[] }>(
+
+           // hiển thị lúc mấy giờ
+      const currentTime = new Date().toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
+      });
+
+    let response: { success: boolean; data: TaskDetail[] } | undefined;
+    try {
+      const res = await apiClient.get<{ success: boolean; data: TaskDetail[] }>(
         TASK_DETAIL_ENDPOINTS.GET_BY_TASK_ID(taskId || "")
       );
-      const taskList = response.data.data;
+      response = res.data;
+    } catch (err) {
+      if(user?.role !== "MANAGER") {
+        console.error("Lỗi khi lấy chi tiết task:", err);
+      toast.error("Không thể tải danh sách công việc.");
+ 
+      window.location.href = `/task?error=${encodeURIComponent(`Công việc bạn vừa truy cập lúc ${currentTime} này không có nhiệm vụ của bạn`)}`;
+      }
+      
+      return;
+    }
+
+    if (!response) {
+      console.error("Response is undefined.");
+      return;
+    }
+
+    const taskList = response.data;
+   
 
       // Đợi tất cả các lời gọi API lấy danh sách assignees hoàn tất
       const tasksWithAssignees = await Promise.all(
@@ -40,7 +67,12 @@ export const useTaskDetail = (taskId: string | undefined) => {
           Array.isArray(task.assignees) &&
           task.assignees.some((assignee) => Number(assignee.id) === Number(user?.id))
         );
-
+        if (filteredTasks.length === 0 ) {
+          toast.error("Bạn không có quyền truy cập vào task này");
+          // Redirect tới trang task kèm thông điệp lỗi qua query string
+          window.location.href = `/task?error=${encodeURIComponent(`Công việc bạn vừa truy cập lúc ${currentTime} không có nhiệm vụ của bạn`)}`;
+          return;
+        }
         setTabs({
           "Đã giao": filteredTasks.filter((task) => task.status === "Đã giao"),
           "Đang thực hiện": filteredTasks.filter((task) => task.status === "Đang thực hiện"),
@@ -182,17 +214,17 @@ export const getAssigneesByTaskDetailId = async (taskDetailId: string) => {
 
 export const getTaskDetailsByUserId = async (userId: string | number) => {
   try {
-    const response = await apiClient.get<{ 
-      success: boolean; 
-      data: TaskDetail[] 
+    const response = await apiClient.get<{
+      success: boolean;
+      data: TaskDetail[]
     }>(
       TASK_DETAIL_ENDPOINTS.GET_ALL_TASK_DETAIL_BY_USER_ID(userId)
     );
-    
+
     if (!response.data.success) {
       throw new Error("Failed to fetch task details by user ID");
     }
-    
+
     return response.data.data;
   } catch (err) {
     console.error("Error fetching task details by user ID:", err);
