@@ -25,6 +25,9 @@ export const TASK_ENDPOINTS = {
   DOWNLOAD_ATTACHMENT: (id: number | string) => `/task/attachment/${id}`,
   COUNT_INCOMPLETE_DETAILS: (id: number | string) =>
     `/task/${id}/incomplete_details`, // Đếm số lượng chi tiết công việc chưa hoàn thành
+  ADD_ATTACHMENTS: (id: number | string) => `/task/${id}/attachments`,
+  DELETE_ALL_ATTACHMENTS: (id: number | string) => `/task/${id}/attachments`,
+  DELETE_ATTACHMENT_BY_ID: (id: number | string) => `/task/attachments/${id}`,
 };
 
 export const TASK_DETAIL_ENDPOINTS = {

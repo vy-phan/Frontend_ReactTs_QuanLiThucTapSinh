@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Task } from "@/@type/type"; // Import interface Task
 import { toast } from "sonner";
+import { TASK_ENDPOINTS } from "@/constants/api";
+import apiClient from "@/lib/apiClient";
 
 interface EditTaskProps {
   onSubmit: (data: Task) => Promise<void>;
@@ -26,12 +28,19 @@ export const EditTask: React.FC<EditTaskProps> = ({
     setEditingTask,
   }) => {
     const [localTask, setLocalTask] = useState<Task>(editingTask); // State để lưu task đang chỉnh sửa
+    const [attachments, setAttachments] = useState<File[]>([]); // State to store new attachments
   
     const handleChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
     ) => {
       const { name, value } = e.target;
       setLocalTask((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files) {
+        setAttachments(Array.from(e.target.files));
+      }
     };
   
     const handleSubmit = async () => {
@@ -43,6 +52,36 @@ export const EditTask: React.FC<EditTaskProps> = ({
       } catch (error) {
         console.error("Lỗi khi cập nhật task:", error);
         toast.error("Cập nhật task thất bại");
+      }
+    };
+
+    const handleAttachmentUpload = async () => {
+      try {
+        const formData = new FormData();
+        attachments.forEach((file) => formData.append("attachments", file));
+
+        const response = await apiClient.post(TASK_ENDPOINTS.ADD_ATTACHMENTS(localTask.id), formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        console.log("Attachments uploaded successfully:", response.data);
+        toast.success("Attachments uploaded successfully");
+      } catch (error) {
+        console.error("Error uploading attachments:", error);
+        toast.error("Failed to upload attachments");
+      }
+    };
+
+    const handleAttachmentDelete = async (attachmentId: number) => {
+      try {
+        await apiClient.delete(TASK_ENDPOINTS.DELETE_ATTACHMENT_BY_ID(attachmentId));
+        console.log("Attachment deleted successfully");
+        toast.success("Attachment deleted successfully");
+      } catch (error) {
+        console.error("Error deleting attachment:", error);
+        toast.error("Failed to delete attachment");
       }
     };
   
@@ -137,6 +176,45 @@ export const EditTask: React.FC<EditTaskProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Attachments Section */}
+            <div className="space-y-4">
+              <div className="grid gap-2">
+                <Label htmlFor="attachments" className="font-medium text-gray-700">
+                  Tệp đính kèm
+                </Label>
+                <Input
+                  id="attachments"
+                  name="attachments"
+                  type="file"
+                  multiple
+                  onChange={handleFileChange}
+                  className="border-gray-300 focus:border-amber-500 focus:ring focus:ring-amber-200 focus:ring-opacity-50 rounded-md"
+                />
+                <Button
+                  type="button"
+                  onClick={handleAttachmentUpload}
+                  className="mt-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                >
+                  Tải lên tệp đính kèm
+                </Button>
+              </div>
+
+              {/* List existing attachments */}
+              {editingTask.attachments?.map((attachment) => (
+                <div key={attachment.id} className="flex items-center justify-between">
+                  <span>{attachment.file_path.split('_').slice(-1)[0]}</span> {/* Display cleaned file name */}
+                  <Button
+                    type="button"
+                    onClick={() => handleAttachmentDelete(attachment.id)}
+                    className="text-red-500 hover:underline"
+                  >
+                    Xóa
+                  </Button>
+                </div>
+              ))}
+            </div>
+
             <DialogFooter className="pt-4 border-t border-gray-100 flex justify-end space-x-3">
               <Button
                 type="button"
@@ -145,8 +223,8 @@ export const EditTask: React.FC<EditTaskProps> = ({
               >
                 Hủy
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
               >
                 Lưu thông tin
