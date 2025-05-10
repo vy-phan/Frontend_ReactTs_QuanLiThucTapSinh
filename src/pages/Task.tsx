@@ -11,8 +11,14 @@ import { formatDate } from "../utils/dateUtils"; // Import hàm formatDate
 import { TASK_ENDPOINTS } from "../constants/api"; // Import endpoint API
 import apiClient from "../lib/apiClient"; // Import apiClient
 import { Badge } from "@/components/ui/badge";
+import { useLocation } from "react-router-dom";
+
 
 export const Task = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const errorMessage = queryParams.get("error");
+  
   const { taskId } = useParams<{ taskId: string }>();
   const { tasks, fetchTask, addTask, updateTask, deleteTask } = useTask(taskId);
   const { user } = useAuth(); // Lấy thông tin người dùng hiện tại từ AuthContext
@@ -131,7 +137,18 @@ export const Task = () => {
   };
 
   return (
+
+
+
+
     <div className="p-8 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen">
+     {errorMessage && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-800 rounded">
+            {errorMessage}
+          </div>
+        )}
+      
+      {/* Tiêu đề */}
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-center mb-6 text-gray-800 bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 py-2">
           Danh sách công việc
@@ -240,6 +257,7 @@ export const Task = () => {
                             </svg>
                             <span className="font-medium">Thời hạn:</span> {formatDate(task.deadline?.toString() || "")}
                           </p>
+                          <p>Người tạo: {task.created_by_username}</p>
                         </div>
                       </div>
 

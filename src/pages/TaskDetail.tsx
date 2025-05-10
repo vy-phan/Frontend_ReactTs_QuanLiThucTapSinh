@@ -16,7 +16,7 @@ import { useAuth } from "@/context/authContext";
 const TaskDetail = () => {
   const navigate = useNavigate();
   const { taskId } = useParams<{ taskId: string }>();
-  const { tasks, fetchTask } = useTask(taskId);
+  const { tasks, fetchTaskById } = useTask(taskId);
   const task = Array.isArray(tasks) ? tasks[0] : tasks as any; // fallback nếu tasks là object
   const { user } = useAuth()
   const { tabs, setTabs, fetchTaskDetail, updateTaskStatus } = useTaskDetail(taskId);
@@ -29,7 +29,7 @@ const TaskDetail = () => {
 
   useEffect(() => {
     fetchTaskDetail();
-    fetchTask();
+    fetchTaskById(taskId || "");
   }, []);
 
   const handleAddTaskDetail = async () => {
@@ -102,10 +102,10 @@ const TaskDetail = () => {
         <h1 className="text-3xl font-bold text-blue-800 drop-shadow-sm">Chi tiết công việc</h1>
         <div className="w-20"></div> {/* This is a spacer to balance the layout */}
       </div>
-      {/* Thông tin chung của Task chính */}
 
       {/* thông tin của mỗi task  */}
       {task ? (
+        
         <div className="mb-8 bg-white shadow-lg rounded-xl p-6 max-w-3xl mx-auto border border-blue-100 hover:shadow-xl transition-all duration-300">
           <h2 className="text-xl font-semibold text-blue-700 mb-3 flex items-center gap-2">
             <span className="bg-blue-100 p-1 rounded-full w-8 h-8 flex items-center justify-center text-blue-700 text-sm">#</span>
@@ -119,6 +119,7 @@ const TaskDetail = () => {
             </span>
           </div>
         </div>
+       
       ) : (
         <p className="text-center text-red-500 mb-6 bg-red-50 py-3 rounded-lg max-w-md mx-auto border border-red-100">Không tìm thấy thông tin task.</p>
       )}

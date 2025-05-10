@@ -44,6 +44,7 @@ export interface Task {
   created_at: string | null; // ISO format or null
   attachments: Attachment[] | null; // Danh sách tệp đính kèm
   // assignees?: User[] | null; // Danh sách người được phân công
+  created_by_username?: string; // Tên người tạo task
 }
 
 
