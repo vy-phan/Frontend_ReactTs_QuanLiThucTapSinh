@@ -24,7 +24,7 @@ const Home = () => {
 
       if (user?.id) {
         const userTasksDetails = await getTaskDetailsByUserId(user.id);
-        
+
         // Merge deadline from tasks into userTasksDetails
         const mergedTasks = userTasksDetails.map(taskDetail => {
           const matchingTask = tasks.find(task => task.id === taskDetail.task_id);
@@ -33,7 +33,7 @@ const Home = () => {
             deadline: matchingTask?.deadline || null
           };
         });
-        
+
         setUserTasksDetails(mergedTasks);
       }
     } catch (error) {
@@ -129,35 +129,53 @@ const Home = () => {
   const renderEvents = (day: Date) => {
     const dayEvents = getEventsForDate(day);
     const formattedDay = formatDate(day);
-    const isNewMonth = day.getDate() === 1; // Check if it's the first day of month
-  
+    const isNewMonth = day.getDate() === 1;
+
     return dayEvents.map(event => {
       const isStartDate = formattedDay === formatDate(event.startDate);
       const isEndDate = formattedDay === formatDate(event.endDate);
       const isMiddleDay = !isStartDate && !isEndDate;
-      const showTitle = !isMiddleDay || isNewMonth; // Show title for new month
-  
+      const showTitle = !isMiddleDay || isNewMonth;
+
+      // Find the full task details
+      const taskDetail = userTasksDetails.find(t => t.id.toString() === event.id);
+
       return (
         <div
           key={event.id}
-          className={`text-xs py-1 px-2 my-1 rounded-md flex items-center transition-all duration-200 hover:translate-x-1 min-h-[28px] ${
-            isMiddleDay
+          className={`text-xs py-1 px-2 my-1 rounded-md flex items-center transition-all duration-200 hover:translate-x-1 min-h-[28px] relative group ${isMiddleDay
               ? event.type === 'warning'
-                ? 'bg-yellow-100 shadow-sm hover:shadow-yellow-200' 
+                ? 'bg-yellow-100 shadow-sm hover:shadow-yellow-200'
                 : event.type === 'success'
-                ? 'bg-green-100 shadow-sm hover:shadow-green-200'
-                : 'bg-blue-100 shadow-sm hover:shadow-blue-200'
-            : event.type === 'warning'
-              ? 'bg-yellow-100 border-l-4 border-yellow-500 shadow-sm hover:shadow-yellow-200'
-              : event.type === 'success'
-                ? 'bg-green-100 border-l-4 border-green-500 shadow-sm hover:shadow-green-200'
-                : 'bg-blue-100 border-l-4 border-blue-500 shadow-sm hover:shadow-blue-200'
-          }`}
+                  ? 'bg-green-100 shadow-sm hover:shadow-green-200'
+                  : 'bg-blue-100 shadow-sm hover:shadow-blue-200'
+              : event.type === 'warning'
+                ? 'bg-yellow-100 border-l-4 border-yellow-500 shadow-sm hover:shadow-yellow-200'
+                : event.type === 'success'
+                  ? 'bg-green-100 border-l-4 border-green-500 shadow-sm hover:shadow-green-200'
+                  : 'bg-blue-100 border-l-4 border-blue-500 shadow-sm hover:shadow-blue-200'
+            }`}
         >
           {showTitle ? (
             <span className="font-medium">{event.title}</span>
           ) : (
             <span className="opacity-0">Placeholder</span>
+          )}
+
+          {/* Tooltip on hover */}
+          {taskDetail && (
+            <div className="absolute z-50 bottom-full mb-2 w-64 p-3 bg-white shadow-lg rounded-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <h3 className="font-bold text-gray-800 mb-1">{taskDetail.title}</h3>
+              <p className="text-gray-600 text-sm mb-1">
+                <span className="font-medium">Mô tả:</span> {taskDetail.description}
+              </p>
+              <p className="text-gray-600 text-sm mb-1">
+                <span className="font-medium">Trạng thái:</span> {taskDetail.status}
+              </p>
+              <p className="text-gray-600 text-sm">
+                <span className="font-medium">Hạn chót:</span> {taskDetail.deadline ? new Date(taskDetail.deadline).toLocaleString('vi-VN', {  year: 'numeric', month: 'numeric', day: 'numeric' }) : 'Không có'}
+              </p>
+            </div>
           )}
         </div>
       );

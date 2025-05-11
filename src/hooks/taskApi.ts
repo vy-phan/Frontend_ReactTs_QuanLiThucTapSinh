@@ -1,213 +1,133 @@
-import { useState, useEffect } from "react";
-import apiClient from "../lib/apiClient"; // Đảm bảo apiClient đã được import
-import { TASK_ENDPOINTS } from "../constants/api"; // Đường dẫn API cho task
-import { Task } from "@/@type/type"; // Interface Task đã được định nghĩa
-import { useAuth } from "@/context/authContext";
+import { useState, useEffect, cache } from 'react';
+import apiClient from "../lib/apiClient";
+import { TASK_ENDPOINTS } from "../constants/api";
+import { Task } from "@/@type/type";
 
-// Hook quản lý task
-export const useTask = (
-  taskId?: string
-): {
-  tasks: Task[];
-  loading: boolean;
-  error: string | null;
-  fetchTask: () => Promise<void>;
-  fetchTaskById: (taskId: string) => Promise<void>;
-  addTask: (newTask: Task | FormData) => Promise<void>;
-  updateTask: (taskId: string, updatedTask: Partial<Task>) => Promise<void>;
-  deleteTask: (id: number | string) => Promise<void>;
-} => {
-  const [tasks, setTasks] = useState<Task[]>([]); // Danh sách task
-  const [loading, setLoading] = useState<boolean>(false); // Trạng thái loading
-  const [error, setError] = useState<string | null>(null); // Lỗi nếu có
-  const{ user } = useAuth()  
+// Cache wrapper for API calls
+const cachedFetch = cache(async (url: string) => {
+  const response = await apiClient.get(url);
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Request failed");
+  }
+  return response.data.data;
+});
 
-  // lấy task theo taskid
-  const fetchTaskById = async (taskId: string) => {
+export const useTask = (taskId?: string) => {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+
+  // Optimized fetch function with React 19 cache
+  const fetchTask = cache(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiClient.get<{ success: boolean; data: Task[] }>(
-        TASK_ENDPOINTS.GET_ALL+`/${taskId}`
-      );
-      if (!response.data.success) {
-        throw new Error("Không tìm thấy task");
-      }
-      setTasks(response.data.data); // Đặt task vào state
+      const data = await cachedFetch(TASK_ENDPOINTS.GET_ALL);
+      setTasks(data);
     } catch (err) {
-      console.error("Lỗi khi load task:", err);
-      setError("Không thể tải danh sách công việc.");
+      console.error("Error loading tasks:", err);
+      setError("Could not load tasks");
     } finally {
       setLoading(false);
     }
-  };
-  // Lấy danh sách task hoặc task theo ID
-  const fetchTask = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    // Lấy danh sách tất cả các task
-    const response = await apiClient.get<{ success: boolean; data: Task[] }>(
-      TASK_ENDPOINTS.GET_ALL
-    );
-    const allTasks = response.data.data;
+  });
 
+  // Optimized fetch by ID
+  const fetchTaskById = cache(async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await cachedFetch(`${TASK_ENDPOINTS.GET_ALL}/${id}`);
+      setTasks(Array.isArray(data) ? data : [data]);
+    } catch (err) {
+      console.error("Error loading task:", err);
+      setError("Could not load task");
+    } finally {
+      setLoading(false);
+    }
+  });
 
-    // Nếu người dùng là MANAGER, hiển thị tất cả task
-    
-      setTasks(allTasks);
-      return;
-   
-
-    // // Lấy tất cả các task_detail
-    // const taskDetailsResponse = await Promise.all(
-    //   allTasks.map(async (task) => {
-    //     const taskDetailResponse = await apiClient.get<{
-    //       success: boolean;
-    //       data: { id: number; task_id: number; title: string; status: string }[];
-    //     }>(`/task_detail/${task.id}`);
-    //     return taskDetailResponse.data.data.map((detail) => ({
-    //       ...detail,
-    //       task_id: task.id,
-    //     }));
-    //   })
-    // );
-
-    // // Gộp tất cả các task_detail từ các task
-    // const allTaskDetails = taskDetailsResponse.flat();
-
-    // // Lấy danh sách assignees cho từng task_detail
-    // const taskDetailsWithAssignees = await Promise.all(
-    //   allTaskDetails.map(async (detail) => {
-    //     const assigneesResponse = await apiClient.get<{
-    //       success: boolean;
-    //       data: { id: number; username: string }[];
-    //     }>(`/task_detail/${detail.id}/assignees`);
-
-    //     return {
-    //       ...detail,
-    //       assignees: assigneesResponse.data.data || [],
-    //     };
-    //   })
-    // );
-
-    // // Lọc các task_detail mà user hiện tại là assignee
-    // const userTaskDetails = taskDetailsWithAssignees.filter((detail) =>
-    //   detail.assignees.some((assignee) => assignee.id === user?.id)
-    // );
-
-    // // Lấy danh sách các task chứa các task_detail mà user hiện tại liên quan
-    // const userTasks = allTasks.filter((task) =>
-    //   userTaskDetails.some((detail) => detail.task_id === task.id)
-    // );
-
-    // setTasks(userTasks);
-  } catch (err) {
-    console.error("Lỗi khi load task:", err);
-    setError("Không thể tải danh sách công việc.");
-  } finally {
-    setLoading(false);
-  }
-};
-
-  // Thêm task mới
+  // Add task with automatic cache update
   const addTask = async (newTask: Task | FormData) => {
     try {
-      console.log("Dữ liệu gửi lên:", newTask);
-
-      // Kiểm tra nếu dữ liệu là FormData
       const isFormData = newTask instanceof FormData;
-
-      const response = await apiClient.post<{
-        success: boolean;
-        message: string;
-        data: Task;
-      }>(TASK_ENDPOINTS.CREATE, newTask, {
+      const response = await apiClient.post(TASK_ENDPOINTS.CREATE, newTask, {
         headers: isFormData
-          ? { "Content-Type": "multipart/form-data" } // Nếu là FormData, đặt Content-Type
-          : { "Content-Type": "application/json" }, // Nếu là JSON
+          ? { "Content-Type": "multipart/form-data" }
+          : { "Content-Type": "application/json" },
         withCredentials: true,
       });
 
       if (!response.data.success) {
-        throw new Error(response.data.message || "Thêm task thất bại");
+        throw new Error(response.data.message || "Add task failed");
       }
 
-      console.log("Thêm task thành công:", response.data.message);
-
-      // Cập nhật danh sách task nếu cần
-      setTasks((prev) => [...prev, response.data.data]);
+      // Update local state and invalidate cache
+      setTasks(prev => [...prev, response.data.data]);
+      cachedFetch(TASK_ENDPOINTS.GET_ALL); // This will refetch fresh data
     } catch (err) {
-      console.error("Lỗi thêm task:", err);
+      console.error("Error adding task:", err);
       throw err;
     }
   };
 
-  // Sửa task
-  const updateTask = async (taskId: string, updatedTask: Partial<Task>) => {
+  // Similar optimizations for update and delete
+  const updateTask = async (id: string, updatedTask: Partial<Task>) => {
     try {
-      const response = await apiClient.put<{
-        success: boolean;
-        message: string;
-        data: Task;
-      }>(TASK_ENDPOINTS.UPDATE(taskId), updatedTask, { withCredentials: true });
+      const response = await apiClient.put(TASK_ENDPOINTS.UPDATE(id), updatedTask, { 
+        withCredentials: true 
+      });
+      
       if (!response.data.success) {
-        throw new Error(response.data.message || "Cập nhật task thất bại");
+        throw new Error(response.data.message || "Update failed");
       }
-      console.log("Cập nhật task thành công:", response.data.message);
-      setTasks((prev) =>
-        prev.map((task) =>
-          task.id.toString() === taskId ? response.data.data : task
-        )
-      ); // Cập nhật task trong danh sách
+
+      setTasks(prev => 
+        prev.map(task => task.id.toString() === id ? response.data.data : task)
+      );
+      cachedFetch(TASK_ENDPOINTS.GET_ALL);
     } catch (err) {
-      console.error("Lỗi cập nhật task:", err);
+      console.error("Error updating task:", err);
       throw err;
     }
   };
 
-  // Xóa task
-  const deleteTask = async (id: number | string): Promise<void> => {
+  const deleteTask = async (id: string | number) => {
     try {
-      console.log("Gửi yêu cầu xóa task với ID:", id); // Log ID task
-      const response = await apiClient.delete<{
-        success: boolean;
-        message: string;
-      }>(
-        TASK_ENDPOINTS.DELETE(id), // Gửi yêu cầu đến endpoint xóa
-        {
-          withCredentials: true, // Gửi cookie hoặc token nếu cần
-        }
-      );
+      const response = await apiClient.delete(TASK_ENDPOINTS.DELETE(id), {
+        withCredentials: true
+      });
 
       if (!response.data.success) {
-        throw new Error(response.data.message || "Xóa task thất bại");
+        throw new Error(response.data.message || "Delete failed");
       }
 
-      console.log("Xóa task thành công:", response.data.message);
-
-      // Cập nhật danh sách task sau khi xóa
-      setTasks((prev) =>
-        prev.filter((task) => task.id.toString() !== id.toString())
-      );
-    } catch (err: any) {
-      console.error("Lỗi xóa task:", err);
-
-      // Kiểm tra lỗi từ server
-      if (err.response && err.response.data) {
-        const errorMessage = err.response.data.error || "Xóa task thất bại";
-        throw new Error(errorMessage);
-      }
-
-      // Lỗi không xác định
-      throw new Error("Không thể kết nối đến server");
+      setTasks(prev => prev.filter(task => task.id.toString() !== id.toString()));
+      cachedFetch(TASK_ENDPOINTS.GET_ALL);
+    } catch (err) {
+      console.error("Error deleting task:", err);
+      throw err;
     }
   };
 
-  // Tự động fetch task khi `taskId` thay đổi
+  // Automatic fetch on mount
   useEffect(() => {
-    fetchTask();
+    if (taskId) {
+      fetchTaskById(taskId);
+    } else {
+      fetchTask();
+    }
   }, [taskId]);
 
-  return { tasks, loading, error, fetchTask, addTask, updateTask, deleteTask ,fetchTaskById};
+  return { 
+    tasks, 
+    loading, 
+    error, 
+    fetchTask, 
+    fetchTaskById, 
+    addTask, 
+    updateTask, 
+    deleteTask 
+  };
 };

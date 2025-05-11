@@ -18,12 +18,12 @@ const TaskDetail = () => {
   const { taskId } = useParams<{ taskId: string }>();
   const { tasks, fetchTaskById } = useTask(taskId);
   const task = Array.isArray(tasks) ? tasks[0] : tasks as any; // fallback nếu tasks là object
-  const { user } = useAuth()
   const { tabs, setTabs, fetchTaskDetail, updateTaskStatus } = useTaskDetail(taskId);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({ title: "", description: "", status: "Đã giao", assignees: "" });
   const [taskToEdit, setTaskToEdit] = useState<any>(null);
+  const { user } = useAuth()  
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
 
@@ -105,7 +105,6 @@ const TaskDetail = () => {
 
       {/* thông tin của mỗi task  */}
       {task ? (
-        
         <div className="mb-8 bg-white shadow-lg rounded-xl p-6 max-w-3xl mx-auto border border-blue-100 hover:shadow-xl transition-all duration-300">
           <h2 className="text-xl font-semibold text-blue-700 mb-3 flex items-center gap-2">
             <span className="bg-blue-100 p-1 rounded-full w-8 h-8 flex items-center justify-center text-blue-700 text-sm">#</span>
@@ -115,11 +114,11 @@ const TaskDetail = () => {
           <div className="flex items-center text-sm text-gray-500 mt-4">
             Thời gian hết hạn :
             <span className="bg-blue-50 px-3 py-1 rounded-full text-blue-700 font-medium">
-              {task.deadline ? new Date(task.deadline).toLocaleString() : "Không có thời hạn"}
+              {task.deadline ? new Date(task.deadline).toLocaleString('vi-VN', {  year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }) : "Không có thời hạn"}
             </span>
           </div>
         </div>
-       
+
       ) : (
         <p className="text-center text-red-500 mb-6 bg-red-50 py-3 rounded-lg max-w-md mx-auto border border-red-100">Không tìm thấy thông tin task.</p>
       )}
@@ -149,7 +148,7 @@ const TaskDetail = () => {
                       rel="noopener noreferrer"
                       title={attachment.file_path.split('/').pop()}
                     >
-                      {attachment.file_path.split('/').pop()}
+                      file đính kèm công việc
                     </a>
                     <span className="text-xs text-gray-500 ml-2">
                       {attachment.file_path.split('.').pop()?.toUpperCase()}
@@ -224,7 +223,7 @@ const TaskDetail = () => {
                         <div key={task.id} className="relative group mb-4">
                           <SortableItem task={task} />
 
-                          {/* {(task as any).created_by === user?.id && ( */}
+                           {/* {(task as any).created_by == user?.id && (  */}
                             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                               <button
                                 onClick={() => {
@@ -244,8 +243,8 @@ const TaskDetail = () => {
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
                               </button>
                             </div>
-                          {/* ) */}
-                          {/* } */}
+                          {/* )
+                          } */}
                         </div>
                       ))
                     )}
