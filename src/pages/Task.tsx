@@ -37,6 +37,7 @@ export const Task = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // State để quản lý modal
   const [selectedTask, setSelectedTask] = useState<TaskType | null>(null); // Task được chọn để xóa
   const [incompleteDetailsCount, setIncompleteDetailsCount] = useState(0); // Số lượng task_detail chưa hoàn thành
+  const checkPermission = user?.role === "MANAGER" || user?.is_verified === true;
 
   useEffect(() => {
     fetchTask();
@@ -149,14 +150,16 @@ export const Task = () => {
           Danh sách công việc
         </h1>
 
-        <div className="flex justify-center items-center mb-8">
-          <AddModal
-            onSubmit={addTask}
-            newTask={newTask}
-            setNewTask={setNewTask}
-            setAttachments={setAttachments}
-          />
-        </div>
+        {checkPermission && (
+          <div className="flex justify-center items-center mb-8">
+            <AddModal
+              onSubmit={addTask}
+              newTask={newTask}
+              setNewTask={setNewTask}
+              setAttachments={setAttachments}
+            />
+          </div>
+        )}
 
         {editingTask && (
           <EditTask
@@ -210,36 +213,36 @@ export const Task = () => {
 
         {/* Hiển thị task theo cột trạng thái */}
         <div className="flex flex-wrap gap-6 justify-center">
-        <Suspense fallback={<div>Loading tasks...</div>}>        
-          {Object.keys(groupedTasks).map((status) => (
-            <div
-              key={status}
-              className={`bg-white rounded-xl shadow-lg p-5 w-full sm:w-[45%] md:w-[30%] border-t-4 ${statusColors[status as keyof typeof statusColors] || "border-gray-200"} transition-all duration-300 hover:shadow-xl`}
-            >
-              <h2 className={`text-xl font-semibold text-center mb-5 py-2 rounded-lg ${statusColors[status as keyof typeof statusColors] || "bg-gray-100 text-gray-700"}`}>
-                {status}
-              </h2>
+          <Suspense fallback={<div>Loading tasks...</div>}>
+            {Object.keys(groupedTasks).map((status) => (
+              <div
+                key={status}
+                className={`bg-white rounded-xl shadow-lg p-5 w-full sm:w-[45%] md:w-[30%] border-t-4 ${statusColors[status as keyof typeof statusColors] || "border-gray-200"} transition-all duration-300 hover:shadow-xl min-w-[250px]`}
+              >
+                <h2 className={`text-xl font-semibold text-center mb-5 py-2 rounded-lg ${statusColors[status as keyof typeof statusColors] || "bg-gray-100 text-gray-700"}`}>
+                  {status}
+                </h2>
 
-              {groupedTasks[status].length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-40 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
-                  <p>Không có công việc</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {groupedTasks[status].map((task: TaskType) => (
-                    <TaskItem 
-                      key={task.id}
-                      task={task}
-                      
-                      onEdit={setEditingTask}
-                      onDelete={openDeleteModal}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </Suspense>
+                {groupedTasks[status].length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-40 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+                    <p>Không có công việc</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {groupedTasks[status].map((task: TaskType) => (
+                      <TaskItem
+                        key={task.id}
+                        task={task}
+
+                        onEdit={setEditingTask}
+                        onDelete={openDeleteModal}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </Suspense>
         </div>
       </div>
     </div>

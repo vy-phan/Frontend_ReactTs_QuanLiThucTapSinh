@@ -40,7 +40,7 @@ export const useTask = (taskId?: string) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await cachedFetch(`${TASK_ENDPOINTS.GET_ALL}/${id}`);
+      const data = await cachedFetch(TASK_ENDPOINTS.GET_BY_ID(id));
       setTasks(Array.isArray(data) ? data : [data]);
     } catch (err) {
       console.error("Error loading task:", err);
