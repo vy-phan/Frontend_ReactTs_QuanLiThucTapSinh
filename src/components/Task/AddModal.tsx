@@ -80,7 +80,7 @@ export const AddModal: React.FC<AddModalProps> = ({
       });
       setLocalAttachments([]);
       setAttachments([]);
-      toast.success("Thêm task thành công");
+      
     } catch (error) {
       console.error("Lỗi khi thêm task:", error);
       toast.error("Thêm task thất bại");

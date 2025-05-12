@@ -230,7 +230,7 @@ export const Task = () => {
                     <TaskItem 
                       key={task.id}
                       task={task}
-                      user={user}
+                      
                       onEdit={setEditingTask}
                       onDelete={openDeleteModal}
                     />
