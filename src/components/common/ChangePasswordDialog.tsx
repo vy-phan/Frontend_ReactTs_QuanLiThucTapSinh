@@ -7,6 +7,8 @@ import { updateUser } from '@/hooks/userApi';
 import { loginUser } from '@/hooks/authApi';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/authContext';
+import { z } from 'zod';
+import { ErrorMessage } from './ErrorMessage';
 
 interface ChangePasswordDialogProps {
   open: boolean;
@@ -20,8 +22,8 @@ export const ChangePasswordDialog = ({ open, onOpenChange, userId }: ChangePassw
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useAuth(); 
-  
+  const { user } = useAuth();
+
 
   const handleReauthenticate = async () => {
     setIsLoading(true);
@@ -37,21 +39,29 @@ export const ChangePasswordDialog = ({ open, onOpenChange, userId }: ChangePassw
   };
 
   const handleChangePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      toast.error('Mật khẩu mới không khớp');
-      return;
-    }
-
-    setIsLoading(true);
     try {
+      // Validate new password
+      const passwordSchema = z.string().min(6, "mật Khẩu phải có ít nhất 6 ký tự");
+      passwordSchema.parse(newPassword);
+
+      if (newPassword !== confirmPassword) {
+        toast.error('Mật khẩu mới không khớp');
+        return;
+      }
+
+      setIsLoading(true);
       const formData = new FormData();
       formData.append('password', newPassword);
-      
+
       await updateUser(userId, formData);
       toast.success('Đổi mật khẩu thành công');
       onOpenChange(false);
       resetForm();
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        // Zod validation error - show error message
+        return;
+      }
       toast.error('Đổi mật khẩu thất bại');
     } finally {
       setIsLoading(false);
@@ -87,7 +97,7 @@ export const ChangePasswordDialog = ({ open, onOpenChange, userId }: ChangePassw
                 placeholder="Mật khẩu hiện tại"
               />
             </div>
-            <Button 
+            <Button
               onClick={handleReauthenticate}
               disabled={!currentPassword || isLoading}
               className="w-full"
@@ -104,8 +114,11 @@ export const ChangePasswordDialog = ({ open, onOpenChange, userId }: ChangePassw
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Mật khẩu mới"
+                placeholder="Mật khẩu mới (ít nhất 6 ký tự)"
               />
+              {newPassword && newPassword.length < 6 && (
+                <ErrorMessage message="Mật khẩu phải có ít nhất 6 ký tự" />
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Xác nhận mật khẩu mới</Label>
@@ -116,10 +129,13 @@ export const ChangePasswordDialog = ({ open, onOpenChange, userId }: ChangePassw
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Xác nhận mật khẩu mới"
               />
+              {confirmPassword && newPassword !== confirmPassword && (
+                <ErrorMessage message="Mật khẩu không khớp" />
+              )}
             </div>
-            <Button 
+            <Button
               onClick={handleChangePassword}
-              disabled={!newPassword || !confirmPassword || isLoading}
+              disabled={!newPassword || !confirmPassword || newPassword.length < 6 || newPassword !== confirmPassword || isLoading}
               className="w-full"
             >
               {isLoading ? 'Đang xử lý...' : 'Đổi mật khẩu'}

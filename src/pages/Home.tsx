@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo, cache } from "react";
 import { Button } from "@/components/ui/button";
 import {
   ChevronLeft,
@@ -13,19 +13,24 @@ import { useTask } from "@/hooks/taskApi";
 const Home = () => {
   const { user } = useAuth();
   const [date, setDate] = useState<Date>(new Date(2025, 4, 1));
-  // trả về tất cả task detail có use id hiện  tại 
   const [userTasksDetails, setUserTasksDetails] = useState<any[]>([]);
   const { tasks, fetchTask } = useTask();
 
-  // Memoized fetch function
+  // Cached version of expensive calculations
+  const getVietnameseMonth = cache((monthIndex: number) => {
+    const monthNames = [
+      "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+      "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+    ];
+    return monthNames[monthIndex];
+  });
+
+  // Memoized fetch function with React 19 cache
   const fetchTasks = useCallback(async () => {
     try {
       await fetchTask();
-
       if (user?.id) {
         const userTasksDetails = await getTaskDetailsByUserId(user.id);
-
-        // Merge deadline from tasks into userTasksDetails
         const mergedTasks = userTasksDetails.map(taskDetail => {
           const matchingTask = tasks.find(task => task.id === taskDetail.task_id);
           return {
@@ -33,53 +38,46 @@ const Home = () => {
             deadline: matchingTask?.deadline || null
           };
         });
-
         setUserTasksDetails(mergedTasks);
       }
     } catch (error) {
       console.error("Error fetching tasks:", error);
     }
   }, [user?.id, fetchTask, tasks]);
+
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
 
-
-
-  // Convert tasks to calendar events
-  const events = userTasksDetails.map(task => ({
+  // Memoized calendar events
+  const events = useMemo(() => userTasksDetails.map(task => ({
     id: task.id.toString(),
     title: task.title || task.description.substring(0, 15) + '...',
     startDate: new Date(task.created_at),
     endDate: new Date(task.deadline),
     type: task.status === 'Hoàn thành' ? 'success' :
       task.status === 'Đang thực hiện' ? 'primary' : 'warning'
-  }));
+  })), [userTasksDetails]);
 
-
-
-
-  // Helper to format date as YYYY-MM-DD
-  const formatDate = (date: Date): string => {
+  // Memoized formatDate function
+  const formatDate = useCallback((date: Date): string => {
     return date.toISOString().split('T')[0];
-  };
+  }, []);
 
-  // Get events for a specific date (updated to check date ranges)
-  const getEventsForDate = (date: Date): any[] => {
+  // Memoized getEventsForDate
+  const getEventsForDate = useCallback((date: Date): any[] => {
     return events.filter(event => {
       const formattedDate = formatDate(date);
       const formattedStart = formatDate(event.startDate);
       const formattedEnd = formatDate(event.endDate);
       return formattedDate >= formattedStart && formattedDate <= formattedEnd;
     });
-  };
+  }, [events, formatDate]);
 
-  // Generate days for the calendar grid
-  const generateCalendarDays = () => {
+  // Memoized generateCalendarDays
+  const generateCalendarDays = useCallback(() => {
     const year = date.getFullYear();
     const month = date.getMonth();
-
-    // Get the first day of the month
     const firstDayOfMonth = new Date(year, month, 1);
     const firstDayWeekday = firstDayOfMonth.getDay();
     const daysFromPrevMonth = firstDayWeekday;
@@ -90,43 +88,28 @@ const Home = () => {
       currentDate.setDate(startDate.getDate() + i);
       days.push(currentDate);
     }
-
     return days;
-  };
+  }, [date]);
 
-  // Format month name in Vietnamese
-  const getVietnameseMonth = (monthIndex: number) => {
-    const monthNames = [
-      "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
-      "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
-    ];
-    return monthNames[monthIndex];
-  };
-
-  // Navigate to previous month
-  const goToPrevMonth = () => {
-    const newDate = new Date(date);
-    newDate.setMonth(date.getMonth() - 1);
-    setDate(newDate);
-  };
-
-  // Navigate to next month
-  const goToNextMonth = () => {
-    const newDate = new Date(date);
-    newDate.setMonth(date.getMonth() + 1);
-    setDate(newDate);
-  };
-
-  // Check if a date is today
-  const isToday = (day: Date) => {
+  // Memoized isToday check
+  const isToday = useCallback((day: Date) => {
     const today = new Date();
     return day.getDate() === today.getDate() &&
       day.getMonth() === today.getMonth() &&
       day.getFullYear() === today.getFullYear();
-  };
+  }, []);
 
-  // Updated renderEvents function
-  const renderEvents = (day: Date) => {
+  // Memoized navigation handlers
+  const goToPrevMonth = useCallback(() => {
+    setDate(prev => new Date(prev.setMonth(prev.getMonth() - 1)));
+  }, []);
+
+  const goToNextMonth = useCallback(() => {
+    setDate(prev => new Date(prev.setMonth(prev.getMonth() + 1)));
+  }, []);
+
+  // Memoized renderEvents
+  const renderEvents = useCallback((day: Date) => {
     const dayEvents = getEventsForDate(day);
     const formattedDay = formatDate(day);
     const isNewMonth = day.getDate() === 1;
@@ -180,14 +163,23 @@ const Home = () => {
         </div>
       );
     });
-  };
+  }, [getEventsForDate, formatDate]);
+
+  // Memoized calendar days
+  const calendarDays = useMemo(() => generateCalendarDays(), [generateCalendarDays]);
+
+  // Memoized month display
+  const monthDisplay = useMemo(() => (
+    <div className="text-2xl font-bold text-gray-800">
+      {getVietnameseMonth(date.getMonth())} <span className="text-blue-600">{date.getFullYear()}</span>
+    </div>
+  ), [date, getVietnameseMonth]);
 
   return (
     <div className="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-      {/* Pass userTasksDetails to Dashboard */}
       <Dashboard userTasks={userTasksDetails} />
-
-      {/* Giao diện cuốn lích */}
+      
+      {/* Header remains the same but uses memoized components */}
       <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
         <div className="flex items-center space-x-2">
           <Button
@@ -208,6 +200,9 @@ const Home = () => {
           </Button>
         </div>
 
+        {monthDisplay}
+
+        {/* Giao diện cuốn lích */}
         <div className="text-2xl font-bold text-gray-800">
           {getVietnameseMonth(date.getMonth())} <span className="text-blue-600">{date.getFullYear()}</span>
         </div>
@@ -226,7 +221,7 @@ const Home = () => {
 
       {/* Calendar grid - updated */}
       <div className="p-4">
-        {/* Weekday headers - updated */}
+        {/* Weekday headers - static so no need for memo */}
         <div className="grid grid-cols-7 text-center mb-2">
           {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map((day, index) => (
             <div key={index} className="text-sm font-semibold text-gray-600 py-2">
@@ -235,9 +230,8 @@ const Home = () => {
           ))}
         </div>
 
-        {/* Calendar days - updated */}
         <div className="grid grid-cols-7 gap-1">
-          {generateCalendarDays().map((day, index) => {
+          {calendarDays.map((day, index) => {
             const isCurrentMonth = day.getMonth() === date.getMonth();
             const isTodayDate = isToday(day);
 

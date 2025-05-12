@@ -23,14 +23,18 @@ const TaskDetail = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({ title: "", description: "", status: "Đã giao", assignees: "" });
   const [taskToEdit, setTaskToEdit] = useState<any>(null);
-  const { user } = useAuth()  
+  const { user } = useAuth()
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
+
+  const checkPermision = task?.created_by === user?.id || false
+
+
 
   useEffect(() => {
     fetchTaskById(taskId || "");
     fetchTaskDetail();
-    
+
   }, []);
 
   const handleAddTaskDetail = async () => {
@@ -115,7 +119,7 @@ const TaskDetail = () => {
           <div className="flex items-center text-sm text-gray-500 mt-4">
             Thời gian hết hạn :
             <span className="bg-blue-50 px-3 py-1 rounded-full text-blue-700 font-medium">
-              {task.deadline ? new Date(task.deadline).toLocaleString('vi-VN', {  year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }) : "Không có thời hạn"}
+              {task.deadline ? new Date(task.deadline).toLocaleString('vi-VN', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }) : "Không có thời hạn"}
             </span>
           </div>
         </div>
@@ -171,15 +175,16 @@ const TaskDetail = () => {
       )}
 
 
-
-      <div className="text-center mb-8">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2 mx-auto"
-        >
-          Thêm Task Detail
-        </button>
-      </div>
+      {checkPermision && (
+        <div className="text-center mb-8">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2 mx-auto"
+          >
+            Thêm Task Detail
+          </button>
+        </div>
+      )}
 
       <TaskDetailForm
         isOpen={isModalOpen}
@@ -208,7 +213,7 @@ const TaskDetail = () => {
             return (
               <div
                 key={tab}
-                className={`bg-white rounded-xl shadow-lg p-5 w-full sm:w-[45%] md:w-[30%] border-t-4 ${statusColors[tab as keyof typeof statusColors] || "border-gray-200"} transition-all duration-300 hover:shadow-xl`}
+                className={`bg-white rounded-xl shadow-lg p-5 min-w-[200px] w-full sm:w-[45%] md:w-[30%] border-t-4 ${statusColors[tab as keyof typeof statusColors] || "border-gray-200"} transition-all duration-300 hover:shadow-xl`}
               >
                 <h2 className={`text-xl font-semibold text-center mb-5 py-2 rounded-lg ${statusColors[tab as keyof typeof statusColors] || "bg-gray-100 text-gray-700"}`}>
                   {tab}
@@ -224,7 +229,7 @@ const TaskDetail = () => {
                         <div key={task.id} className="relative group mb-4">
                           <SortableItem task={task} />
 
-                           {/* {(task as any).created_by == user?.id && (  */}
+                          {checkPermision ? (
                             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                               <button
                                 onClick={() => {
@@ -244,8 +249,10 @@ const TaskDetail = () => {
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
                               </button>
                             </div>
-                          {/* )
-                          } */}
+                          ) : (
+                            null
+                          )
+                          }
                         </div>
                       ))
                     )}

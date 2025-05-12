@@ -32,7 +32,7 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background transition-all duration-300 ease-in-out">
-        <Sidebar className="shadow-md transition-all duration-300 ease-in-out flex flex-col bg-[#0f1729] border-r border-[#1d283a]">
+        <Sidebar className="shadow-md transition-all duration-300 ease-in-out flex flex-col bg-sidebar border-r border-sidebar-border">
           <SidebarHeader className="p-4">
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-md ">
