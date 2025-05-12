@@ -1,7 +1,9 @@
-import { useState, useEffect, cache } from 'react';
+import { useState, useEffect, cache } from "react";
 import apiClient from "../lib/apiClient";
 import { TASK_ENDPOINTS } from "../constants/api";
 import { Task } from "@/@type/type";
+import { useAuth } from "../context/authContext";
+import { toast } from "sonner";
 
 // Cache wrapper for API calls
 const cachedFetch = cache(async (url: string) => {
@@ -16,7 +18,7 @@ export const useTask = (taskId?: string) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const { user } = useAuth();
 
   // Optimized fetch function with React 19 cache
   const fetchTask = cache(async () => {
@@ -50,7 +52,7 @@ export const useTask = (taskId?: string) => {
 
   // Add task with automatic cache update
   const addTask = async (newTask: Task | FormData) => {
-    try {
+   if(user?.is_verified === true || user?.role === "MANAGER"){ try {
       const isFormData = newTask instanceof FormData;
       const response = await apiClient.post(TASK_ENDPOINTS.CREATE, newTask, {
         headers: isFormData
@@ -64,27 +66,37 @@ export const useTask = (taskId?: string) => {
       }
 
       // Update local state and invalidate cache
-      setTasks(prev => [...prev, response.data.data]);
+      setTasks((prev) => [...prev, response.data.data]);
       cachedFetch(TASK_ENDPOINTS.GET_ALL); // This will refetch fresh data
+      toast.success("Thêm task thành công");
     } catch (err) {
       console.error("Error adding task:", err);
       throw err;
+    }}
+    else{
+      toast.error("Bạn chưa xác thực tài khoản");
     }
   };
 
   // Similar optimizations for update and delete
   const updateTask = async (id: string, updatedTask: Partial<Task>) => {
     try {
-      const response = await apiClient.put(TASK_ENDPOINTS.UPDATE(id), updatedTask, { 
-        withCredentials: true 
-      });
-      
+      const response = await apiClient.put(
+        TASK_ENDPOINTS.UPDATE(id),
+        updatedTask,
+        {
+          withCredentials: true,
+        }
+      );
+
       if (!response.data.success) {
         throw new Error(response.data.message || "Update failed");
       }
 
-      setTasks(prev => 
-        prev.map(task => task.id.toString() === id ? response.data.data : task)
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id.toString() === id ? response.data.data : task
+        )
       );
       cachedFetch(TASK_ENDPOINTS.GET_ALL);
     } catch (err) {
@@ -96,14 +108,16 @@ export const useTask = (taskId?: string) => {
   const deleteTask = async (id: string | number) => {
     try {
       const response = await apiClient.delete(TASK_ENDPOINTS.DELETE(id), {
-        withCredentials: true
+        withCredentials: true,
       });
 
       if (!response.data.success) {
         throw new Error(response.data.message || "Delete failed");
       }
 
-      setTasks(prev => prev.filter(task => task.id.toString() !== id.toString()));
+      setTasks((prev) =>
+        prev.filter((task) => task.id.toString() !== id.toString())
+      );
       cachedFetch(TASK_ENDPOINTS.GET_ALL);
     } catch (err) {
       console.error("Error deleting task:", err);
@@ -120,14 +134,14 @@ export const useTask = (taskId?: string) => {
     }
   }, [taskId]);
 
-  return { 
-    tasks, 
-    loading, 
-    error, 
-    fetchTask, 
-    fetchTaskById, 
-    addTask, 
-    updateTask, 
-    deleteTask 
+  return {
+    tasks,
+    loading,
+    error,
+    fetchTask,
+    fetchTaskById,
+    addTask,
+    updateTask,
+    deleteTask,
   };
 };

@@ -28,8 +28,9 @@ const TaskDetail = () => {
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
 
   useEffect(() => {
-    fetchTaskDetail();
     fetchTaskById(taskId || "");
+    fetchTaskDetail();
+    
   }, []);
 
   const handleAddTaskDetail = async () => {
