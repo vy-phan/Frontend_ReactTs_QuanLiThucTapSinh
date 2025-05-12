@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 import { getAllUsers } from '@/hooks/userApi';
 
 interface DashboardProps {
-  userTasks: any[];
+    userTasks: any[];
 }
 
 const Dashboard = ({ userTasks }: DashboardProps) => {
@@ -29,12 +29,12 @@ const Dashboard = ({ userTasks }: DashboardProps) => {
 
     // Update stats when userTasks changes
     useEffect(() => {
-      setStats(prev => ({
-        ...prev,
-        inProgressTasks: userTasks.filter(task => task.status === 'Đang thực hiện').length,
-        completedTasks: userTasks.filter(task => task.status === 'Hoàn thành').length,
-        pendingTasks: userTasks.filter(task => task.status === 'Đã giao').length
-      }));
+        setStats(prev => ({
+            ...prev,
+            inProgressTasks: userTasks.filter(task => task.status === 'Đang thực hiện').length,
+            completedTasks: userTasks.filter(task => task.status === 'Hoàn thành').length,
+            pendingTasks: userTasks.filter(task => task.status === 'Đã giao').length
+        }));
     }, [userTasks]);
 
     useEffect(() => {
@@ -49,7 +49,7 @@ const Dashboard = ({ userTasks }: DashboardProps) => {
                 console.error('Failed to fetch users:', error);
             }
         };
-        
+
         fetchUserCount();
     }, []);
 
@@ -69,7 +69,7 @@ const Dashboard = ({ userTasks }: DashboardProps) => {
                         <Card className="overflow-hidden">
                             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                                 <CardTitle className="text-sm font-medium text-gray-500">Tổng người dùng</CardTitle>
-                                <Users className="h-5 w-5 text-blue-500" />
+                                <Users className="h-5 w-5 text-indigo-500" />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
@@ -85,7 +85,7 @@ const Dashboard = ({ userTasks }: DashboardProps) => {
                                 </div>
                                 <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-blue-500 rounded-full"
+                                        className="h-full bg-indigo-500 rounded-full"
                                         style={{ width: '75%' }}
                                     />
                                 </div>
@@ -99,7 +99,7 @@ const Dashboard = ({ userTasks }: DashboardProps) => {
                 <Card className="overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium text-gray-500">Công việc đang tiến hành</CardTitle>
-                        <Clock className="h-5 w-5 text-yellow-500" />
+                        <Clock className="h-5 w-5 text-blue-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.inProgressTasks.toLocaleString()}</div>
@@ -115,7 +115,7 @@ const Dashboard = ({ userTasks }: DashboardProps) => {
                         </div>
                         <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-yellow-500 rounded-full"
+                                className="h-full bg-blue-500 rounded-full"
                                 style={{ width: '45%' }}
                             />
                         </div>
@@ -153,7 +153,7 @@ const Dashboard = ({ userTasks }: DashboardProps) => {
                 <Card className="overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium text-gray-500">Công việc đang chờ</CardTitle>
-                        <ClipboardList className="h-5 w-5 text-purple-500" />
+                        <ClipboardList className="h-5 w-5 text-yellow-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.pendingTasks.toLocaleString()}</div>
@@ -169,15 +169,13 @@ const Dashboard = ({ userTasks }: DashboardProps) => {
                         </div>
                         <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-purple-500 rounded-full"
+                                className="h-full bg-yellow-500 rounded-full"
                                 style={{ width: '20%' }}
                             />
                         </div>
                     </CardContent>
                 </Card>
             </div>
-
-
         </div>
     );
 };

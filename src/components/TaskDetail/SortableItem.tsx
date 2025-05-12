@@ -1,3 +1,4 @@
+import { formatDate } from "@/utils/dateUtils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -41,23 +42,23 @@ export const SortableItem = ({ task }: { task: any }) => {
             
             <p className="text-sm text-gray-600 mb-3">{task.description}</p>
             
-            <div className="flex flex-wrap gap-2 items-center text-xs text-gray-500 mt-3 pt-2 border-t border-gray-100">
-                <div className="flex items-center gap-1">
+            <div className="flex flex-wrap justify-between items-center text-xs text-gray-500 mt-3 pt-2 border-t border-gray-100">
+                <div className="flex items-center gap-1 w-[48%] min-w-[48%]">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10"/>
                         <polyline points="12 6 12 12 16 14"/>
                     </svg>
-                    <span>{new Date(task.updated_at).toLocaleString()}</span>
+                    <span className="break-words">Cập nhật {formatDate(task.updated_at)}</span>
                 </div>
                 
-                <div className="flex items-center gap-1 ml-auto">
+                <div className="flex items-center gap-1 w-[48%] min-w-[48%] justify-end">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
                         <circle cx="9" cy="7" r="4"/>
                         <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                     </svg>
-                    <span>
+                    <span className="break-words text-left">
                         {task.assignees && task.assignees.length > 0
                             ? task.assignees.map((assignee: any) => assignee.username).join(", ")
                             : "Chưa có"}
