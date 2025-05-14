@@ -31,22 +31,49 @@ export const useTaskDetail = (taskId: string | undefined) => {
 
         const task = taskResponse.data.data;
 
-        if (user?.role !== "MANAGER" && user?.id !== task.created_by) {
-          toast.error("Bạn không có quyền truy cập vào task này");
-          window.location.href = `/task?error=${encodeURIComponent(
-            `Công việc bạn vừa truy cập lúc ${currentTime} không thuộc quyền quản lý của bạn`
-          )}`;
-          return;
-        }
-
         const res = await apiClient.get<{
           success: boolean;
           data: TaskDetail[];
         }>(TASK_DETAIL_ENDPOINTS.GET_BY_TASK_ID(taskId || ""));
+        const taskDetailList = res.data.data;
+
+        // Đợi tất cả các lời gọi API lấy danh sách assignees hoàn tất
+        const taskDetailsWithAssignees = await Promise.all(
+          taskDetailList.map(async (taskDetail) => {
+            const assigneesResponse = await apiClient.get<{
+              success: boolean;
+              data: { id: number; username: string }[];
+            }>(`/task_detail/${taskDetail.id}/assignees`);
+            return {
+              ...taskDetail,
+              assignees: assigneesResponse.data.data || [],
+            };
+          })
+        );
+
+        // Kiểm tra quyền truy cập: người dùng là manager, người tạo task hoặc thành viên của task detail
+        const isAssignee = taskDetailsWithAssignees.some((taskDetail) =>
+          taskDetail.assignees.some(
+            (assignee) => Number(assignee.id) === Number(user?.id)
+          )
+        );
+
+        if (
+          user?.role !== "MANAGER" &&
+          task?.created_by !== user?.id &&
+          !isAssignee
+        ) {
+          toast.error("Bạn không có quyền truy cập vào task này");
+          window.location.href = `/task?error=${encodeURIComponent(
+            `Công việc bạn vừa truy cập không thuộc quyền quản lý của bạn`
+          )}`;
+          return;
+        }
+
         response = res.data;
       } catch (err) {
         console.error("Lỗi khi lấy chi tiết task:", err);
-
+        toast.error("Không thể tải danh sách công việc.");
         return;
       }
 
