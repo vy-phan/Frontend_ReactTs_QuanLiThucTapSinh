@@ -56,7 +56,6 @@ const Intern = () => {
 
   // Stats calculation
   const totalUsers = users.length;
-  const verifiedUsers = users.filter(user => user.is_verified).length;
 
   // Filter users based on active tab and search term
   const getFilteredUsers = () => {
@@ -87,31 +86,35 @@ const Intern = () => {
   const filteredUsers = getFilteredUsers();
 
   return (
-    <div className="p-6 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="p-4 md:p-6 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         {/* Main Content Card */}
         <Card className="shadow-sm border border-gray-200 overflow-hidden">
-          <CardHeader className="border-b bg-white py-4">
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+          <CardHeader className="border-b bg-white py-3 md:py-4">
+            <div className="flex flex-col gap-3 md:flex-row md:justify-between md:items-center">
               <div>
-                <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Quản lý Người dùng</CardTitle>
-                <CardDescription className="text-gray-500 mt-1">Quản lý tất cả người dùng trong hệ thống</CardDescription>
+                <CardTitle className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                  Quản lý Người dùng
+                </CardTitle>
+                <CardDescription className="text-xs md:text-sm text-gray-500 mt-1">
+                  Quản lý tất cả người dùng trong hệ thống
+                </CardDescription>
               </div>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <div className="relative">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <div className="relative w-full">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Tìm kiếm người dùng..."
+                    placeholder="Tìm kiếm..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 w-full sm:w-64 border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="pl-9 w-full text-sm md:text-base"
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={fetchUsers} 
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={fetchUsers}
                     className="hover:bg-blue-50 hover:text-blue-600 transition-colors"
                   >
                     <RefreshCw className="h-4 w-4" />
@@ -123,14 +126,24 @@ const Intern = () => {
           </CardHeader>
 
           {/* Tabs */}
-          <div className="px-6 pt-4 border-b">
+          <div className="px-4 md:px-6 pt-2 md:pt-4 border-b">
             <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="bg-gray-100">
-                <TabsTrigger value="all" className="data-[state=active]:bg-white">Tất cả</TabsTrigger>
-                <TabsTrigger value="verified" className="data-[state=active]:bg-white">Đã xác minh</TabsTrigger>
-                <TabsTrigger value="unverified" className="data-[state=active]:bg-white">Chưa xác minh</TabsTrigger>
-                <TabsTrigger value="managers" className="data-[state=active]:bg-white">Quản lý</TabsTrigger>
-                <TabsTrigger value="interns" className="data-[state=active]:bg-white">Thực tập sinh</TabsTrigger>
+              <TabsList className="bg-gray-100 overflow-x-auto">
+                <TabsTrigger value="all" className="text-xs md:text-sm data-[state=active]:bg-white">
+                  Tất cả
+                </TabsTrigger>
+                <TabsTrigger value="verified" className="text-xs md:text-sm data-[state=active]:bg-white">
+                  Đã xác minh
+                </TabsTrigger>
+                <TabsTrigger value="unverified" className="text-xs md:text-sm data-[state=active]:bg-white">
+                  Chưa xác minh
+                </TabsTrigger>
+                <TabsTrigger value="managers" className="text-xs md:text-sm data-[state=active]:bg-white">
+                  Quản lý
+                </TabsTrigger>
+                <TabsTrigger value="interns" className="text-xs md:text-sm data-[state=active]:bg-white">
+                  Thực tập sinh
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -149,106 +162,169 @@ const Intern = () => {
                 ))}
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50 hover:bg-gray-50">
-                      <TableHead className="font-semibold">ID</TableHead>
-                      <TableHead className="font-semibold">Người dùng</TableHead>
-                      <TableHead className="font-semibold">Email</TableHead>
-                      <TableHead className="font-semibold">Vai trò</TableHead>
-                      <TableHead className="font-semibold">Xác minh</TableHead>
-                      <TableHead className="font-semibold">Ngày bắt đầu</TableHead>
-                      <TableHead className="text-right font-semibold">Thao tác</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                          Không tìm thấy người dùng nào
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredUsers.map((user) => (
-                        <TableRow key={user.id} className="hover:bg-gray-50 transition-colors">
-                          <TableCell>{user.id}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-9 w-9 border border-gray-200">
-                                <AvatarImage 
-                                  src={user?.avatar || '/src/assets/avatar.png'}
-                                  alt={user?.username}
-                                />
-                                <AvatarFallback className="bg-blue-100 text-blue-600">
-                                  {user?.username?.charAt(0).toUpperCase() || 'U'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="font-medium text-gray-900">{user.username}</p>
-                              </div>
+              <>
+                {/* Mobile View - Cards */}
+                <div className="md:hidden space-y-3 p-4">
+                  {filteredUsers.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      Không tìm thấy người dùng nào
+                    </div>
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <Card key={user.id} className="p-4 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={user?.avatar} alt={user?.username} />
+                              <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
+                                {user?.username?.charAt(0).toUpperCase() || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium text-sm">{user.username}</p>
+                              <p className="text-xs text-gray-500">{user.email}</p>
                             </div>
-                          </TableCell>
-                          <TableCell className="text-gray-600">{user.email}</TableCell>
-                          <TableCell>
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${user.role === UserRole.MANAGER
-                              ? 'bg-purple-100 text-purple-800 border border-purple-200'
-                              : 'bg-green-100 text-green-800 border border-green-200'
-                              }`}>
-                              {user.role === UserRole.MANAGER ? 'Quản lý' : 'Thực tập sinh'}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              className={`${user.is_verified
-                                ? 'bg-green-500 hover:bg-green-600 text-white'
-                                : 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                                } shadow-sm`}
-                            >
-                              {user.is_verified ? 'Đã xác minh' : 'Chưa xác minh'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {user.start_date ? (
-                              <div className="flex flex-col">
-                                <span className="text-gray-900">
-                                  {new Date(user.start_date).toLocaleDateString('vi-VN')}
-                                </span>
-                           
-                              </div>
-                            ) : 'N/A'}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex gap-2 justify-end">
-                              <DetailModal user={user} />
-                              <EditModal
-                                user={user}
-                                onSuccess={fetchUsers}
-                              />
+                          </div>
+                          <Badge
+                            variant={user.is_verified ? "default" : "secondary"}
+                            className="text-xs"
+                          >
+                            {user.is_verified ? 'Đã xác minh' : 'Chưa xác minh'}
+                          </Badge>
+                        </div>
+                        <div className="mt-3 flex justify-between items-center">
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            user.role === UserRole.MANAGER
+                              ? 'bg-purple-100 text-purple-800'
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {user.role === UserRole.MANAGER ? 'Quản lý' : 'Thực tập sinh'}
+                          </span>
+                          <div className="flex gap-1">
+                            <DetailModal user={user}  />
+                            <EditModal user={user} onSuccess={fetchUsers}  />
+                            {user.role !== UserRole.MANAGER && (
                               <Button
                                 variant="destructive"
-                                size="sm"
+                                
                                 onClick={() => {
-                                  if (user.role === UserRole.MANAGER) {
-                                    toast.error('Không thể xóa tài khoản quản lý');
-                                    return;
-                                  }
-                                  if (window.confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
+                                  if (window.confirm('Bạn có chắc muốn xóa?')) {
                                     handleDelete(user.id);
                                   }
                                 }}
-                                className={`${user.role === UserRole.MANAGER ? 'opacity-50 cursor-not-allowed' : ''} shadow-sm`}
                               >
                                 Xóa
                               </Button>
-                            </div>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </div>
+
+                {/* Desktop View - Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50 hover:bg-gray-50">
+                        <TableHead className="font-semibold">ID</TableHead>
+                        <TableHead className="font-semibold">Người dùng</TableHead>
+                        <TableHead className="font-semibold">Email</TableHead>
+                        <TableHead className="font-semibold">Vai trò</TableHead>
+                        <TableHead className="font-semibold">Xác minh</TableHead>
+                        <TableHead className="font-semibold">Ngày bắt đầu</TableHead>
+                        <TableHead className="text-right font-semibold">Thao tác</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredUsers.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                            Không tìm thấy người dùng nào
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                      ) : (
+                        filteredUsers.map((user) => (
+                          <TableRow key={user.id} className="hover:bg-gray-50 transition-colors">
+                            <TableCell>{user.id}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-9 w-9 border border-gray-200">
+                                  <AvatarImage 
+                                    src={user?.avatar || '/src/assets/avatar.png'}
+                                    alt={user?.username}
+                                  />
+                                  <AvatarFallback className="bg-blue-100 text-blue-600">
+                                    {user?.username?.charAt(0).toUpperCase() || 'U'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p className="font-medium text-gray-900">{user.username}</p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-gray-600">{user.email}</TableCell>
+                            <TableCell>
+                              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${user.role === UserRole.MANAGER
+                                ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                                : 'bg-green-100 text-green-800 border border-green-200'
+                                }`}>
+                                {user.role === UserRole.MANAGER ? 'Quản lý' : 'Thực tập sinh'}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                className={`${user.is_verified
+                                  ? 'bg-green-500 hover:bg-green-600 text-white'
+                                  : 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                                  } shadow-sm`}
+                              >
+                                {user.is_verified ? 'Đã xác minh' : 'Chưa xác minh'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {user.start_date ? (
+                                <div className="flex flex-col">
+                                  <span className="text-gray-900">
+                                    {new Date(user.start_date).toLocaleDateString('vi-VN')}
+                                  </span>
+                               
+                                </div>
+                              ) : 'N/A'}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex gap-2 justify-end">
+                                <DetailModal user={user} />
+                                <EditModal
+                                  user={user}
+                                  onSuccess={fetchUsers}
+                                />
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (user.role === UserRole.MANAGER) {
+                                      toast.error('Không thể xóa tài khoản quản lý');
+                                      return;
+                                    }
+                                    if (window.confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
+                                      handleDelete(user.id);
+                                    }
+                                  }}
+                                  className={`${user.role === UserRole.MANAGER ? 'opacity-50 cursor-not-allowed' : ''} shadow-sm`}
+                                >
+                                  Xóa
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
             )}
           </CardContent>
           <CardFooter className="border-t py-3 px-6 bg-gray-50">

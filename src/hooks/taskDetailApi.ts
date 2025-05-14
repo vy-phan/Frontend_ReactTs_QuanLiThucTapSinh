@@ -4,7 +4,6 @@ import { TASK_DETAIL_ENDPOINTS, TASK_ENDPOINTS } from "../constants/api";
 import { TaskDetail, Task } from "@/@type/type"; // Import kiểu TaskDetail
 import { useAuth } from "../context/authContext"; // Import AuthContext để lấy thông tin người dùng
 import { toast } from "sonner";
-import { formatDate } from "@/utils/dateUtils";
 
 export const useTaskDetail = (taskId: string | undefined) => {
   const { user } = useAuth();
@@ -47,24 +46,19 @@ export const useTaskDetail = (taskId: string | undefined) => {
         }
       }
 
-      if (!response) {
-        console.error("Response is undefined.");
-        return;
-      }
+      const taskDetailList = response.data.data;
+      if (!taskDetailList.length) return;
 
-      const taskDetailList = response.data;
-
-      // Đợi tất cả các lời gọi API lấy danh sách assignees hoàn tất
+      // Process assignees in parallel
       const taskDetailsWithAssignees = await Promise.all(
         taskDetailList.map(async (taskDetail) => {
           const assigneesResponse = await apiClient.get<{
             success: boolean;
             data: { id: number; username: string }[];
-          }>(`/task_detail/${taskDetail.id}/assignees`);
-          console.log(
-            `Assignees cho task ${taskDetail.id}:`,
-            assigneesResponse.data.data
-          );
+          }>(`/task_detail/${taskDetail.id}/assignees`).catch(() => ({
+            data: { success: false, data: [] }
+          }));
+          
           return {
             ...taskDetail,
             assignees: assigneesResponse.data.data || [],
@@ -72,6 +66,7 @@ export const useTaskDetail = (taskId: string | undefined) => {
         })
       );
  
+
 
       // Sau khi tất cả các lời gọi API hoàn tất, kiểm tra vai trò của người dùng
       if (user?.role !== "MANAGER" && user?.id !== task?.created_by ) {
@@ -87,35 +82,22 @@ export const useTaskDetail = (taskId: string | undefined) => {
         console.log("Task details with assignees:", filteredTaskDetails);
         if (filteredTaskDetails.length === 0) {
           toast.error("Bạn không có quyền truy cập vào task này");
-          // Redirect tới trang task kèm thông điệp lỗi qua query string
           window.location.href = `/task?error=${encodeURIComponent(
             `Công việc bạn vừa truy cập lúc ${formatDate(currentTime)} không có nhiệm vụ của bạn`
           )}`;
           return;
         }
-        setTabs({
-          "Đã giao": filteredTaskDetails.filter(
-            (taskDetail) => taskDetail.status === "Đã giao"
-          ),
-          "Đang thực hiện": filteredTaskDetails.filter(
-            (taskDetail) => taskDetail.status === "Đang thực hiện"
-          ),
-          "Hoàn thành": filteredTaskDetails.filter(
-            (taskDetail) => taskDetail.status === "Hoàn thành"
-          ),
+
+        filtered.forEach(taskDetail => {
+          (newTabs[taskDetail.status] as TaskDetail[]).push(taskDetail);
         });
       } else {
-        // Nếu là MANAGER, hiển thị tất cả các task_detail
-        const grouped: Record<string, TaskDetail[]> = {
-          "Đã giao": [],
-          "Đang thực hiện": [],
-          "Hoàn thành": [],
-        };
-        taskDetailsWithAssignees.forEach((taskDetail: TaskDetail) => {
-          grouped[taskDetail.status].push(taskDetail);
+        taskDetailsWithAssignees.forEach(taskDetail => {
+          (newTabs[taskDetail.status] as TaskDetail[]).push(taskDetail);
         });
-        setTabs(grouped);
       }
+
+      setTabs(newTabs);
     } catch (err) {
       console.error("Lỗi khi lấy chi tiết task:", err);
     }
@@ -158,8 +140,6 @@ export const useTaskDetail = (taskId: string | undefined) => {
 };
 
 export const addTaskDetail = async (taskId: string, newTask: any) => {
-  // Kiểm tra lại trước khi gửi
-  console.log("Trước khi gửi task:", newTask);
 
   const payload = {
     ...newTask,
