@@ -31,6 +31,9 @@ const Login = () => {
       await login(credentials); // Gọi hàm login từ context
       // Thành công: context đã cập nhật state, backend set cookie
       navigate(from, { replace: true }); // Điều hướng
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     } catch (error: any) {
       // Lấy message lỗi từ API hoặc trả về thông báo chung
       setLoginError('Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu.');

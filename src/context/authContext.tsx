@@ -17,7 +17,6 @@ export const AuthProvider: React.FC<LayoutProps> = ({ children }) => {
     setUser(null);
     setRole(null);
     setIsAuthenticated(false);
-    console.log("User logged out (client state cleared)");
   }, []);
 
   // Hàm check auth status (sử dụng hàm từ hook)
@@ -27,9 +26,7 @@ export const AuthProvider: React.FC<LayoutProps> = ({ children }) => {
       setUser(currentUser);
       setRole(currentUser.role);
       setIsAuthenticated(true);
-      console.log("Auth status checked: User is authenticated", currentUser);
     } catch (error) {
-      console.log("Auth status checked: User is not authenticated", error);
       handleLogoutClientSide(); // Đảm bảo state sạch
     } finally {
       if (isLoading) {

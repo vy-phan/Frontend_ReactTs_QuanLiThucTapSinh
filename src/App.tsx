@@ -12,6 +12,7 @@ import Searching from './pages/Searching';
 
 function App() {
   const { user } = useAuth();
+  
 
   return (
     <Router>
