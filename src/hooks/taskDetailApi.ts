@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import apiClient from "../lib/apiClient"; // Đảm bảo apiClient đã được import
 import { TASK_DETAIL_ENDPOINTS, TASK_ENDPOINTS } from "../constants/api";
-import { TaskDetail } from "@/@type/type"; // Import kiểu TaskDetail
+import { TaskDetail, Task } from "@/@type/type"; // Import kiểu TaskDetail
 import { useAuth } from "../context/authContext"; // Import AuthContext để lấy thông tin người dùng
 import { toast } from "sonner";
 import { formatDate } from "@/utils/dateUtils";
@@ -21,60 +21,30 @@ export const useTaskDetail = (taskId: string | undefined) => {
       const currentTime = new Date().toLocaleString("vi-VN", {
         timeZone: "Asia/Ho_Chi_Minh",
       });
-
+      let task: Task | undefined;
       let response: { success: boolean; data: TaskDetail[] } | undefined;
       try {
         const taskResponse = await apiClient.get<{
           success: boolean;
-          data: any;
+          data: Task;
         }>(TASK_ENDPOINTS.GET_BY_ID(taskId || ""));
 
-        const task = taskResponse.data.data;
+        task = taskResponse.data.data;
 
         const res = await apiClient.get<{
           success: boolean;
           data: TaskDetail[];
         }>(TASK_DETAIL_ENDPOINTS.GET_BY_TASK_ID(taskId || ""));
-        const taskDetailList = res.data.data;
-
-        // Đợi tất cả các lời gọi API lấy danh sách assignees hoàn tất
-        const taskDetailsWithAssignees = await Promise.all(
-          taskDetailList.map(async (taskDetail) => {
-            const assigneesResponse = await apiClient.get<{
-              success: boolean;
-              data: { id: number; username: string }[];
-            }>(`/task_detail/${taskDetail.id}/assignees`);
-            return {
-              ...taskDetail,
-              assignees: assigneesResponse.data.data || [],
-            };
-          })
-        );
-
-        // Kiểm tra quyền truy cập: người dùng là manager, người tạo task hoặc thành viên của task detail
-        const isAssignee = taskDetailsWithAssignees.some((taskDetail) =>
-          taskDetail.assignees.some(
-            (assignee) => Number(assignee.id) === Number(user?.id)
-          )
-        );
-
-        if (
-          user?.role !== "MANAGER" &&
-          task?.created_by !== user?.id &&
-          !isAssignee
-        ) {
-          toast.error("Bạn không có quyền truy cập vào task này");
-          window.location.href = `/task?error=${encodeURIComponent(
-            `Công việc bạn vừa truy cập không thuộc quyền quản lý của bạn`
-          )}`;
-          return;
-        }
-
         response = res.data;
       } catch (err) {
         console.error("Lỗi khi lấy chi tiết task:", err);
-        toast.error("Không thể tải danh sách công việc.");
-        return;
+        if(user?.role !== "MANAGER" && user?.id !== task?.created_by) {
+          toast.error("Bạn không có quyền truy cập vào task này");
+          // Redirect tới trang task kèm thông điệp lỗi qua query string
+          window.location.href = `/task?error=${encodeURIComponent(
+            `Công việc bạn vừa truy cập lúc ${formatDate(currentTime)} không có nhiệm vụ của bạn`
+          )}`;
+        }
       }
 
       if (!response) {
@@ -101,10 +71,12 @@ export const useTaskDetail = (taskId: string | undefined) => {
           };
         })
       );
+ 
 
       // Sau khi tất cả các lời gọi API hoàn tất, kiểm tra vai trò của người dùng
-      if (user?.role !== "MANAGER") {
+      if (user?.role !== "MANAGER" && user?.id !== task?.created_by ) {
         // Nếu không phải MANAGER, chỉ hiển thị các task_detail mà user được giao
+        
         const filteredTaskDetails = taskDetailsWithAssignees.filter(
           (taskDetail) =>
             Array.isArray(taskDetail.assignees) &&
@@ -112,11 +84,12 @@ export const useTaskDetail = (taskId: string | undefined) => {
               (assignee) => Number(assignee.id) === Number(user?.id)
             )
         );
+        console.log("Task details with assignees:", filteredTaskDetails);
         if (filteredTaskDetails.length === 0) {
           toast.error("Bạn không có quyền truy cập vào task này");
           // Redirect tới trang task kèm thông điệp lỗi qua query string
           window.location.href = `/task?error=${encodeURIComponent(
-            `Công việc bạn vừa truy cập lúc ${currentTime} không có nhiệm vụ của bạn`
+            `Công việc bạn vừa truy cập lúc ${formatDate(currentTime)} không có nhiệm vụ của bạn`
           )}`;
           return;
         }
