@@ -94,6 +94,14 @@ export const roleConfig = {
   }
 };
 
+export interface EventItem {
+  title: string;
+  endDate?: Date;
+}
+
+export interface TodayTasksReminderProps {
+  todayEvents: EventItem[];
+}
 
 
 //=============================================================================

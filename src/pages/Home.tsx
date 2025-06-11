@@ -1,18 +1,16 @@
 import { useCallback, useEffect, useState, useMemo, cache } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
-import GradientText from "@/components/ui/GradientText";
+import CalendarMonth from "@/components/common/CalendarMonth";
+import TimelineView from "@/components/common/TimelineView";
 import Dashboard from "@/components/common/Dashboard";
+import TodayTasksReminder from "@/components/common/TodayTasksReminder";
 import { useAuth } from "@/context/authContext";
 import { getTaskDetailsByUserId } from "@/hooks/taskDetailApi";
 import { useTask } from "@/hooks/taskApi";
 
 const Home = () => {
   const { user } = useAuth();
-  const [date, setDate] = useState<Date>(new Date(2025, 4, 1));
+  // Khởi tạo ngày hiện tại là ngày thực tế của hệ thống
+  const [date, setDate] = useState<Date>(new Date());
   const [userTasksDetails, setUserTasksDetails] = useState<any[]>([]);
   const { tasks, fetchTask } = useTask();
 
@@ -101,11 +99,19 @@ const Home = () => {
 
   // Memoized navigation handlers
   const goToPrevMonth = useCallback(() => {
-    setDate(prev => new Date(prev.setMonth(prev.getMonth() - 1)));
+    setDate(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(prev.getMonth() - 1);
+      return newDate;
+    });
   }, []);
 
   const goToNextMonth = useCallback(() => {
-    setDate(prev => new Date(prev.setMonth(prev.getMonth() + 1)));
+    setDate(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(prev.getMonth() + 1);
+      return newDate;
+    });
   }, []);
 
   // Memoized renderEvents
@@ -127,16 +133,16 @@ const Home = () => {
         <div
           key={event.id}
           className={`text-xs py-1 px-2 my-1 rounded-md flex items-center transition-all duration-200 hover:translate-x-1 min-h-[28px] relative group ${isMiddleDay
-              ? event.type === 'warning'
-                ? 'bg-yellow-100 shadow-sm hover:shadow-yellow-200'
-                : event.type === 'success'
-                  ? 'bg-green-100 shadow-sm hover:shadow-green-200'
-                  : 'bg-blue-100 shadow-sm hover:shadow-blue-200'
-              : event.type === 'warning'
-                ? 'bg-yellow-100 border-l-4 border-yellow-500 shadow-sm hover:shadow-yellow-200'
-                : event.type === 'success'
-                  ? 'bg-green-100 border-l-4 border-green-500 shadow-sm hover:shadow-green-200'
-                  : 'bg-blue-100 border-l-4 border-blue-500 shadow-sm hover:shadow-blue-200'
+            ? event.type === 'warning'
+              ? 'bg-yellow-100 shadow-sm hover:shadow-yellow-200'
+              : event.type === 'success'
+                ? 'bg-green-100 shadow-sm hover:shadow-green-200'
+                : 'bg-blue-100 shadow-sm hover:shadow-blue-200'
+            : event.type === 'warning'
+              ? 'bg-yellow-100 border-l-4 border-yellow-500 shadow-sm hover:shadow-yellow-200'
+              : event.type === 'success'
+                ? 'bg-green-100 border-l-4 border-green-500 shadow-sm hover:shadow-green-200'
+                : 'bg-blue-100 border-l-4 border-blue-500 shadow-sm hover:shadow-blue-200'
             }`}
         >
           {showTitle ? (
@@ -156,14 +162,14 @@ const Home = () => {
                 <span className="font-medium">Trạng thái:</span> {taskDetail.status}
               </p>
               <p className="text-gray-600 text-sm">
-                <span className="font-medium">Hạn chót:</span> {taskDetail.deadline ? new Date(taskDetail.deadline).toLocaleString('vi-VN', {  year: 'numeric', month: 'numeric', day: 'numeric' }) : 'Không có'}
+                <span className="font-medium">Hạn chót:</span> {taskDetail.deadline ? new Date(taskDetail.deadline).toLocaleString('vi-VN', { year: 'numeric', month: 'numeric', day: 'numeric' }) : 'Không có'}
               </p>
             </div>
           )}
         </div>
       );
     });
-  }, [getEventsForDate, formatDate]);
+  }, [getEventsForDate, formatDate, userTasksDetails]);
 
   // Memoized calendar days
   const calendarDays = useMemo(() => generateCalendarDays(), [generateCalendarDays]);
@@ -175,93 +181,82 @@ const Home = () => {
     </div>
   ), [date, getVietnameseMonth]);
 
+  const [viewMode, setViewMode] = useState<'calendar' | 'timeline'>(() => {
+    return (localStorage.getItem('viewMode') as 'calendar' | 'timeline') || 'calendar';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('viewMode', viewMode);
+  }, [viewMode]);
+
   return (
     <div className="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
       <Dashboard userTasks={userTasksDetails} />
-      
-      {/* Header remains the same but uses memoized components */}
-      <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-9 w-9 rounded-full hover:bg-gray-100 transition-colors"
-            onClick={goToPrevMonth}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-9 w-9 rounded-full hover:bg-gray-100 transition-colors"
-            onClick={goToNextMonth}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
 
-        {monthDisplay}
-
-        {/* Giao diện cuốn lích */}
-        <div className="text-2xl font-bold text-gray-800">
-          {getVietnameseMonth(date.getMonth())} <span className="text-blue-600">{date.getFullYear()}</span>
-        </div>
-
-        <div className="flex rounded-lg bg-gray-800 p-2 shadow-inner">
-          <GradientText
-            colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
-            animationSpeed={7}
-            showBorder={false}
-            className="text-md font-bold"
-          >
-            Tháng
-          </GradientText>
-        </div>
+      {/* Toggle for calendar/timeline view */}
+      <div className="flex justify-end p-4 gap-2">
+        <button
+          className={`px-4 py-2 rounded-lg border font-semibold transition-colors duration-150 border-green-600 text-green-600 hover:bg-green-50 group relative`}
+          onClick={() => window.location.reload()}
+        >
+          Làm mới dữ liệu
+          <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            Chưa thấy dữ liệu? Nhấn để tải lại nhanh hơn
+          </span>
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg border font-semibold transition-colors duration-150 ${viewMode === 'calendar' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-600 hover:bg-blue-50'}`}
+          onClick={() => setViewMode('calendar')}
+        >
+          Lịch tháng
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg border font-semibold transition-colors duration-150 ${viewMode === 'timeline' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-600 hover:bg-blue-50'}`}
+          onClick={() => setViewMode('timeline')}
+        >
+          Dòng thời gian
+        </button>
       </div>
 
-      {/* Calendar grid - updated */}
-      <div className="p-4">
-        {/* Weekday headers - static so no need for memo */}
-        <div className="grid grid-cols-7 text-center mb-2">
-          {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map((day, index) => (
-            <div key={index} className="text-sm font-semibold text-gray-600 py-2">
-              {day}
-            </div>
-          ))}
-        </div>
+      {/* Công việc hôm nay */}
+      {(() => {
+        const today = new Date();
+        const todayEvents = events.filter(event => {
+          const start = event.startDate;
+          const end = event.endDate || event.startDate;
+          // So sánh theo ngày, bỏ qua giờ/phút/giây
+          const todayStr = today.toISOString().split('T')[0];
+          const startStr = start.toISOString().split('T')[0];
+          const endStr = end.toISOString().split('T')[0];
+          return todayStr >= startStr && todayStr <= endStr;
+        });
+        return (
+          <TodayTasksReminder todayEvents={todayEvents} />
+        );
+      })()}
 
-        <div className="grid grid-cols-7 gap-1">
-          {calendarDays.map((day, index) => {
-            const isCurrentMonth = day.getMonth() === date.getMonth();
-            const isTodayDate = isToday(day);
 
-            return (
-              <div
-                key={index}
-                className={`
-                  rounded-lg p-2 min-h-28 transition-all duration-200
-                  ${isCurrentMonth ? 'bg-white' : 'bg-gray-50 text-gray-400'}
-                  ${index % 7 === 0 ? 'border-l border-gray-100' : ''}
-                  hover:shadow-sm hover:bg-gray-50
-                `}
-              >
-                <div className="text-right mb-1">
-                  <span className={`
-                    inline-flex items-center justify-center w-6 h-6 rounded-full
-                    ${isTodayDate ? 'bg-blue-600 text-white font-bold' : ''}
-                    ${!isTodayDate && isCurrentMonth ? 'hover:bg-gray-200' : ''}
-                  `}>
-                    {day.getDate()}
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  {isCurrentMonth && renderEvents(day)}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* Calendar or Timeline view */}
+      {viewMode === 'calendar' ? (
+        <CalendarMonth
+          goToPrevMonth={goToPrevMonth}
+          goToNextMonth={goToNextMonth}
+          monthDisplay={monthDisplay}
+          calendarDays={calendarDays}
+          date={date}
+          isToday={isToday}
+          renderEvents={renderEvents}
+        />
+      ) : (
+        <TimelineView events={userTasksDetails.map(task => ({
+          ...task,
+          id: task.id.toString(),
+          title: task.title || task.description?.substring(0, 15) + '...',
+          startDate: new Date(task.created_at),
+          endDate: new Date(task.deadline),
+          type: task.status === 'Hoàn thành' ? 'success' : task.status === 'Đang thực hiện' ? 'primary' : 'warning',
+        }))} />
+      )}
     </div>
   );
 };

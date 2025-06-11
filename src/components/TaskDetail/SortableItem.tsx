@@ -7,12 +7,16 @@ export const SortableItem = ({ task }: { task: any }) => {
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.8 : 1,
-        backgroundColor: "#fff",
-        borderRadius: "0.75rem",
-        position: "relative" as const,
-        overflow: "hidden" as const,
+        transition: transition || 'box-shadow 0.25s cubic-bezier(0.4,0,0.2,1), transform 0.25s cubic-bezier(0.4,0,0.2,1)',
+        opacity: isDragging ? 0.92 : 1,
+        backgroundColor: '#fff',
+        borderRadius: '0.75rem',
+        position: 'relative' as const,
+        overflow: 'hidden' as const,
+        boxShadow: isDragging ? '0 8px 32px 0 rgba(0, 120, 255, 0.18), 0 2px 8px 0 rgba(0,0,0,0.12)' : '0 1px 4px 0 rgba(0,0,0,0.07)',
+        zIndex: isDragging ? 20 : 1,
+        scale: isDragging ? '1.025' : '1',
+        border: isDragging ? '2px solid #3b82f6' : undefined,
     };
 
     // Determine status color
@@ -31,7 +35,7 @@ export const SortableItem = ({ task }: { task: any }) => {
             style={style} 
             {...attributes} 
             {...listeners}
-            className={`border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 p-4 mb-3 border-l-4 ${getStatusColor()}`}
+            className={`border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 p-4 mb-3 border-l-4 ${getStatusColor()} ${isDragging ? 'ring-2 ring-blue-400/60 cursor-grabbing' : 'cursor-grab active:cursor-grabbing'}`}
         >
             <div className="flex justify-between items-start mb-2">
                 <h3 className="text-md font-bold text-gray-800">{task.title}</h3>

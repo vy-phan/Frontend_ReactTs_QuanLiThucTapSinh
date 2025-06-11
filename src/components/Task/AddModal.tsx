@@ -116,7 +116,23 @@ export const AddModal: React.FC<AddModalProps> = ({
             {/* Cột 1 */}
             <div className="space-y-4">
               <div className="grid gap-2">
-                <Label htmlFor="code" className="font-medium text-gray-700">Mã công việc</Label>
+                <Label htmlFor="code" className="font-medium text-gray-700 flex items-center justify-between">
+                  Mã công việc
+                  <button
+                    type="button"
+                    className="ml-2 px-2 py-1 text-xs rounded bg-blue-100 hover:bg-blue-200 text-blue-700 border border-blue-200 transition"
+                    title="Tạo mã tự động"
+                    onClick={() => {
+                      const letters = Array.from({length: 4}, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
+                      const numbers = Math.floor(Math.random() * 90 + 10); // 2 số, luôn >=10
+                      const randomCode = `${letters}_${numbers}`;
+                      setNewTask(prev => ({ ...prev, code: randomCode }));
+                    }}
+                  >
+                    <svg className="inline w-4 h-4 mr-1 -mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M16.88 3.549A9 9 0 1 1 2.1 17.45M22 12A10 10 0 1 0 12 22"/><path d="M12 8v4l3 3"/></svg>
+                    Tạo mã ngẫu nhiên
+                  </button>
+                </Label>
                 <Input
                   id="code"
                   name="code"

@@ -4,9 +4,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogHeader,
   DialogTitle,
-  DialogTrigger
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -207,7 +205,7 @@ export const EditTask: React.FC<EditTaskProps> = ({
                   <Button
                     type="button"
                     onClick={() => handleAttachmentDelete(attachment.id)}
-                    className="text-red-500 hover:underline"
+                    className="bg-gray-200 text-red-500 hover:underline"
                   >
                     Xóa
                   </Button>

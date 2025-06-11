@@ -1,27 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useTask } from "../hooks/taskApi"; // Import hook quản lý task
-import { useAuth } from "../context/authContext"; // Import AuthContext
-import { Task as TaskType } from "@/@type/type"; // Interface Task đã được định nghĩa
+import { useTask } from "../hooks/taskApi";   
+import { useAuth } from "../context/authContext";   
+import { Task as TaskType } from "@/@type/type";  
 import { toast } from "sonner";
-import { AddModal } from "../components/Task/AddModal"; // Import AddModal
-import { EditTask } from "../components/Task/EditTask"; // Import EditTask
-import { TASK_ENDPOINTS } from "../constants/api"; // Import endpoint API
-import apiClient from "../lib/apiClient"; // Import apiClient
+import { AddModal } from "../components/Task/AddModal"; 
+import { EditTask } from "../components/Task/EditTask"; 
+import { TASK_ENDPOINTS } from "../constants/api"; 
+import apiClient from "../lib/apiClient"; 
 import { useLocation } from "react-router-dom";
-import { Suspense } from 'react';
-import { TaskItem } from '@/components/Task/TaskItem';
+import { Suspense, useState } from 'react';
+import { TaskBoardColumns } from '@/components/Task/TaskBoardColumns';
+import { TaskListView } from '@/components/Task/TaskListView';
 
 
 export const Task = () => {
   const location = useLocation();
+  const [viewMode, setViewMode] = useState<'board' | 'list'>(() => {
+    return (localStorage.getItem('task_view_mode') as 'board' | 'list') || 'board';
+  });
   const queryParams = new URLSearchParams(location.search);
   const errorMessage = queryParams.get("error");
 
   const { taskId } = useParams<{ taskId: string }>();
   const { tasks, fetchTask, addTask, updateTask, deleteTask } = useTask(taskId);
-  const { user } = useAuth(); // Lấy thông tin người dùng hiện tại từ AuthContext
-  const [attachments, setAttachments] = useState<File[]>([]); // State để lưu file đính kèm
+  const { user } = useAuth(); 
+  const [, setAttachments] = useState<File[]>([]); 
   const [newTask, setNewTask] = useState<TaskType>({
     id: 0,
     code: "",
@@ -29,14 +33,14 @@ export const Task = () => {
     description: "",
     deadline: "",
     status: "Đã giao",
-    created_by: user?.id || 0, // Sử dụng id của người dùng hiện tại
+    created_by: user?.id || 0, 
     created_at: "",
     attachments: [],
   });
-  const [editingTask, setEditingTask] = useState<TaskType | null>(null); // State để lưu task đang chỉnh sửa
-  const [isModalOpen, setIsModalOpen] = useState(false); // State để quản lý modal
-  const [selectedTask, setSelectedTask] = useState<TaskType | null>(null); // Task được chọn để xóa
-  const [incompleteDetailsCount, setIncompleteDetailsCount] = useState(0); // Số lượng task_detail chưa hoàn thành
+  const [editingTask, setEditingTask] = useState<TaskType | null>(null); 
+  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [selectedTask, setSelectedTask] = useState<TaskType | null>(null); 
+  const [incompleteDetailsCount, setIncompleteDetailsCount] = useState(0); 
   const checkPermission = user?.role === "MANAGER" || user?.is_verified === true;
 
   useEffect(() => {
@@ -146,9 +150,47 @@ export const Task = () => {
 
       {/* Tiêu đề */}
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-6 text-gray-800 bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 py-2">
-          Danh sách công việc
-        </h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+          <h1 className="text-3xl font-bold text-center sm:text-left text-gray-800 bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 py-2">
+            Danh sách công việc
+          </h1>
+          <div className="flex justify-center sm:justify-end gap-2">
+            <button
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border font-semibold transition-colors duration-150 border-green-600 text-green-600 hover:bg-green-50 group relative`}
+              onClick={() => window.location.reload()}
+            >
+              Làm mới dữ liệu
+              <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                Chưa thấy dữ liệu? Nhấn để tải lại nhanh hơn
+              </span>
+            </button>
+            <button
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-150 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400/50 font-semibold text-sm ${viewMode === 'board' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+              onClick={() => {
+                setViewMode('board');
+                localStorage.setItem('task_view_mode', 'board');
+              }}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="7" height="16" rx="2" className={viewMode === 'board' ? 'fill-white/80' : 'fill-blue-100'} stroke="currentColor" />
+                <rect x="14" y="4" width="7" height="9" rx="2" className={viewMode === 'board' ? 'fill-white/80' : 'fill-blue-100'} stroke="currentColor" />
+              </svg>
+              Board
+            </button>
+            <button
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-150 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400/50 font-semibold text-sm ${viewMode === 'list' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+              onClick={() => {
+                setViewMode('list');
+                localStorage.setItem('task_view_mode', 'list');
+              }}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              List
+            </button>
+          </div>
+        </div>
 
         {checkPermission && (
           <div className="flex justify-center items-center mb-8">
@@ -211,39 +253,22 @@ export const Task = () => {
           </div>
         )}
 
-        {/* Hiển thị task theo cột trạng thái */}
-        <div className="flex flex-wrap gap-6 justify-center">
-          <Suspense fallback={<div>Loading tasks...</div>}>
-            {Object.keys(groupedTasks).map((status) => (
-              <div
-                key={status}
-                className={`bg-white rounded-xl shadow-lg p-5 w-full sm:w-[45%] md:w-[30%] border-t-4 ${statusColors[status as keyof typeof statusColors] || "border-gray-200"} transition-all duration-300 hover:shadow-xl min-w-[250px]`}
-              >
-                <h2 className={`text-xl font-semibold text-center mb-5 py-2 rounded-lg ${statusColors[status as keyof typeof statusColors] || "bg-gray-100 text-gray-700"}`}>
-                  {status}
-                </h2>
-
-                {groupedTasks[status].length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-40 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
-                    <p>Không có công việc</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {groupedTasks[status].map((task: TaskType) => (
-                      <TaskItem
-                        key={task.id}
-                        task={task}
-
-                        onEdit={setEditingTask}
-                        onDelete={openDeleteModal}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </Suspense>
-        </div>
+        <Suspense fallback={<div>Loading tasks...</div>}>
+          {viewMode === 'board' ? (
+            <TaskBoardColumns
+              groupedTasks={groupedTasks}
+              statusColors={statusColors}
+              onEdit={setEditingTask}
+              onDelete={openDeleteModal}
+            />
+          ) : (
+            <TaskListView
+              tasks={tasks}
+              onEdit={setEditingTask}
+              onDelete={openDeleteModal}
+            />
+          )}
+        </Suspense>
       </div>
     </div>
   );
