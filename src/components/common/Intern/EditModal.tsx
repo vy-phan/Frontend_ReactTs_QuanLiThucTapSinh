@@ -92,8 +92,31 @@ export function EditModal({ user, onSuccess }: EditModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className='bg-amber-400 hover:bg-amber-500' size="sm">
-          Sửa
+        <Button
+          className="bg-amber-400 hover:bg-amber-500 flex items-center gap-2 relative group"
+          size="sm"
+        >
+          <span className="block md:hidden">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a4 4 0 01-1.414.94l-4.243 1.415 1.415-4.243a4 4 0 01.94-1.414z"
+              />
+            </svg>
+            {/* Tooltip hiển thị khi hover trên mobile */}
+            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-yellow-500 text-white text-xs opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-10">
+              Sửa
+            </span>
+          </span>
+          <span className="hidden md:block">Sửa</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">

@@ -18,7 +18,7 @@ import { AddModal } from '@/components/common/Intern/AddModal';
 import { EditModal } from '@/components/common/Intern/EditModal';
 import { DetailModal } from '@/components/common/Intern/DetailModal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs,TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, RefreshCw } from 'lucide-react';
 
@@ -60,7 +60,7 @@ const Intern = () => {
   // Filter users based on active tab and search term
   const getFilteredUsers = () => {
     let filtered = users;
-    
+
     // Filter by tab
     if (activeTab === 'verified') {
       filtered = filtered.filter(user => user.is_verified);
@@ -71,7 +71,7 @@ const Intern = () => {
     } else if (activeTab === 'interns') {
       filtered = filtered.filter(user => user.role === UserRole.INTERN);
     }
-    
+
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(user =>
@@ -79,7 +79,7 @@ const Intern = () => {
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
+
     return filtered;
   };
 
@@ -185,35 +185,53 @@ const Intern = () => {
                               <p className="text-xs text-gray-500">{user.email}</p>
                             </div>
                           </div>
-                          <Badge
-                            variant={user.is_verified ? "default" : "secondary"}
-                            className="text-xs"
-                          >
-                            {user.is_verified ? 'Đã xác minh' : 'Chưa xác minh'}
-                          </Badge>
+                            <Badge
+                                className={`${user.is_verified
+                                  ? 'bg-green-500 hover:bg-green-600 text-white'
+                                  : 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                                  } shadow-sm`}
+                              >
+                                {user.is_verified ? 'Đã xác minh' : 'Chưa xác minh'}
+                              </Badge>
                         </div>
                         <div className="mt-3 flex justify-between items-center">
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            user.role === UserRole.MANAGER
-                              ? 'bg-purple-100 text-purple-800'
-                              : 'bg-green-100 text-green-800'
-                          }`}>
+                          <span className={`text-xs px-2 py-1 rounded-full ${user.role === UserRole.MANAGER
+                            ? 'bg-purple-100 text-purple-800'
+                            : 'bg-green-100 text-green-800'
+                            }`}>
                             {user.role === UserRole.MANAGER ? 'Quản lý' : 'Thực tập sinh'}
                           </span>
                           <div className="flex gap-1">
-                            <DetailModal user={user}  />
-                            <EditModal user={user} onSuccess={fetchUsers}  />
+                            <DetailModal user={user} />
+                            <EditModal user={user} onSuccess={fetchUsers} />
                             {user.role !== UserRole.MANAGER && (
                               <Button
-                                variant="destructive"
-                                
+                                variant="ghost"
+                                size="sm"
+                                className="group relative bg-red-500 text-white hover:bg-red-600 focus:bg-red-600 shadow-sm"
                                 onClick={() => {
                                   if (window.confirm('Bạn có chắc muốn xóa?')) {
                                     handleDelete(user.id);
                                   }
                                 }}
                               >
-                                Xóa
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                  />
+                                </svg>
+                                <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-red-500 text-white text-xs opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-10">
+                                  Xóa
+                                </span>
                               </Button>
                             )}
                           </div>
@@ -251,7 +269,7 @@ const Intern = () => {
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-9 w-9 border border-gray-200">
-                                  <AvatarImage 
+                                  <AvatarImage
                                     src={user?.avatar || '/src/assets/avatar.png'}
                                     alt={user?.username}
                                   />
@@ -289,7 +307,7 @@ const Intern = () => {
                                   <span className="text-gray-900">
                                     {new Date(user.start_date).toLocaleDateString('vi-VN')}
                                   </span>
-                               
+
                                 </div>
                               ) : 'N/A'}
                             </TableCell>
@@ -330,6 +348,30 @@ const Intern = () => {
           <CardFooter className="border-t py-3 px-6 bg-gray-50">
             <div className="text-sm text-gray-500">Hiển thị {filteredUsers.length} trên tổng số {totalUsers} người dùng</div>
           </CardFooter>
+        </Card>
+
+        {/* take note giải thích ý nghĩa của chưa xác minh và xác minh  */}
+        <Card className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-0 shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold text-blue-700 flex items-center gap-2">
+              <svg width="20" height="20" fill="none" className="inline-block mr-1 text-blue-500" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" stroke="#2563eb" strokeWidth="2" /><path d="M10 6v4l2 2" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              Ý nghĩa trạng thái xác minh
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-gray-700">
+            <div className="flex items-start gap-2">
+              <Badge className="bg-yellow-400 text-white px-2 py-1 rounded-full text-xs mt-0.5">Chưa xác minh</Badge>
+              <span>
+                <strong>Thực tập sinh</strong> chỉ có quyền <span className="text-blue-600 font-medium">kéo thả chi tiết công việc</span>, ngoài ra không có quyền nào khác.
+              </span>
+            </div>
+            <div className="flex items-start gap-2">
+              <Badge className="bg-green-500 text-white px-2 py-1 rounded-full text-xs mt-0.5">Đã xác minh</Badge>
+              <span>
+                <strong>Thực tập sinh</strong> có quyền <span className="text-green-700 font-medium">tạo công việc</span> và <span className="text-green-700 font-medium">thêm chi tiết việc</span>. Giống như với chức năng của <span className="font-semibold text-purple-700">quản lý</span>.
+              </span>
+            </div>
+          </CardContent>
         </Card>
       </div>
     </div>

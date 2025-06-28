@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import errorImage from '@/assets/error.png';
 
 const NotFound = () => {
   return (
@@ -24,7 +23,7 @@ const NotFound = () => {
         {/* Right Column - Image */}
         <div className="flex justify-center order-1 md:order-2">
           <img 
-            src={errorImage} 
+            src='https://raw.githubusercontent.com/vy-phan/Frontend_ReactTs_QuanLiThucTapSinh/refs/heads/master/src/assets/error.png' 
             alt="Lỗi 404" 
             className="max-w-md w-full h-auto object-contain drop-shadow-lg"
           />

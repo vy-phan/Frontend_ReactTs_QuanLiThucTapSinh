@@ -5,6 +5,15 @@ import path from "path"
 
 // https://vite.dev/config/
 export default defineConfig({
+   build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: `assets/[name].js`,
+        chunkFileNames: `assets/[name].js`,
+        assetFileNames: 'assets/[name].[hash].[ext]'
+      }
+    }
+  },
   plugins: [
     react(),
     tailwindcss(),

@@ -47,7 +47,7 @@ const Login = () => {
       <div
         className="absolute inset-0 bg-cover bg-center opacity-75 md:opacity-100"
         style={{
-          backgroundImage: 'url("/src/assets/background.png")', // Kiểm tra lại đường dẫn ảnh
+           backgroundImage: 'url("https://raw.githubusercontent.com/vy-phan/Frontend_ReactTs_QuanLiThucTapSinh/refs/heads/master/src/assets/background.png")', // Kiểm tra lại đường dẫn ảnh
           backgroundSize: 'contain',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

@@ -66,15 +66,15 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  /* Updated sidebar colors to match Tbay logo (orange and purple) */
-  --sidebar: oklch(0.2 0.05 280); /* Dark purple background */
-  --sidebar-foreground: oklch(0.98 0.01 30); /* Light text color with slight orange tint */
-  --sidebar-primary: oklch(0.7 0.2 40); /* Orange accent */
-  --sidebar-primary-foreground: oklch(0.15 0.02 280); /* Dark text on orange elements */
-  --sidebar-accent: oklch(0.3 0.1 280); /* Lighter purple for hover states */
-  --sidebar-accent-foreground: oklch(0.98 0.05 40); /* Light orange text on accent */
-  --sidebar-border: oklch(0.25 0.08 280); /* Subtle purple border */
-  --sidebar-ring: oklch(0.7 0.2 40); /* Orange focus ring */
+  /* Sidebar colors: modern blue & teal palette for a fresh look */
+  --sidebar: oklch(0.25 0.09 230); /* Deep blue background */
+  --sidebar-foreground: oklch(0.98 0.01 180); /* Almost white text with a hint of teal */
+  --sidebar-primary: oklch(0.7 0.18 200); /* Vibrant teal accent */
+  --sidebar-primary-foreground: oklch(0.18 0.02 230); /* Deep blue text on teal elements */
+  --sidebar-accent: oklch(0.4 0.12 220); /* Lighter blue for hover states */
+  --sidebar-accent-foreground: oklch(0.98 0.03 180); /* Bright text on accent */
+  --sidebar-border: oklch(0.3 0.07 230); /* Subtle blue border */
+  --sidebar-ring: oklch(0.7 0.18 200); /* Teal focus ring */
 }
 
 .dark {
